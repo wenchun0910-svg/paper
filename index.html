@@ -282,8 +282,8 @@
     <!-- 7. Javascript 邏輯區 -->
     <script>
         const CONFIG = {
-            USE_GOOGLE_SHEETS: false, 
-            GAS_URL: 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL',
+            USE_GOOGLE_SHEETS: true, 
+            GAS_URL: 'https://script.google.com/macros/s/AKfycbzx8VFrA_8KTGwFtujlLIPjMMEPn33sIV3Llgmd8gOhEy7LT6VqvipC1ziVWMWLCxCU-g/exec',
             ITEMS_PER_PAGE: 10
         };
 
@@ -303,7 +303,7 @@
             { id: 'u_test', username: 'test', password: '123', role: 'collaborator' }
         ];
 
-        const dummyCategories = ['行政', '財務', '專案', '技術', '其他'];
+        const dummyCategories = ['學校行政', '評量訊息', '數學', '國語', '其他'];
 
         const dummyData = Array.from({ length: 25 }, (_, i) => {
             const randomTime = Date.now() - Math.floor(Math.random() * 10000000000);
