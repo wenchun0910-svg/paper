@@ -326,6 +326,45 @@
             return colorClasses[Math.abs(hash) % colorClasses.length];
         };
 
+        // 根據網址自動辨識並回傳對應的圖示與顏色
+        const getIconInfo = (url) => {
+            try {
+                const urlObj = new URL(url);
+                const hostname = urlObj.hostname.toLowerCase();
+
+                if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
+                    return { class: 'fab fa-youtube', color: 'text-red-500', hover: 'group-hover:text-red-600' };
+                }
+                if (hostname.includes('drive.google.com') || hostname.includes('docs.google.com')) {
+                    return { class: 'fab fa-google-drive', color: 'text-green-600', hover: 'group-hover:text-green-700' };
+                }
+                if (hostname.includes('github.com')) {
+                    return { class: 'fab fa-github', color: 'text-slate-800', hover: 'group-hover:text-black' };
+                }
+                if (hostname.includes('dropbox.com')) {
+                    return { class: 'fab fa-dropbox', color: 'text-blue-600', hover: 'group-hover:text-blue-700' };
+                }
+                if (hostname.includes('figma.com')) {
+                    return { class: 'fab fa-figma', color: 'text-purple-500', hover: 'group-hover:text-purple-600' };
+                }
+                if (hostname.includes('trello.com')) {
+                    return { class: 'fab fa-trello', color: 'text-blue-500', hover: 'group-hover:text-blue-600' };
+                }
+                if (hostname.includes('notion.so') || hostname.includes('notion.site')) {
+                    return { class: 'fas fa-cube', color: 'text-slate-800', hover: 'group-hover:text-black' };
+                }
+                if (hostname.includes('slack.com')) {
+                    return { class: 'fab fa-slack', color: 'text-purple-600', hover: 'group-hover:text-purple-700' };
+                }
+                
+                // 預設的一般連結圖示
+                return { class: 'fas fa-link', color: 'text-slate-400', hover: 'group-hover:text-blue-500' };
+            } catch (e) {
+                // 若網址格式不正確，顯示一般文件圖示
+                return { class: 'fas fa-file-alt', color: 'text-slate-400', hover: 'group-hover:text-blue-500' };
+            }
+        };
+
         const Dialog = {
             show(title, message, isConfirm = false) {
                 return new Promise((resolve) => {
@@ -689,6 +728,7 @@
 
             docs.forEach(doc => {
                 const colorClass = getColorClass(doc.category);
+                const iconInfo = getIconInfo(doc.link); // 取得動態圖示資訊
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-blue-50/50 transition-colors group';
                 
@@ -719,7 +759,7 @@
                 tr.innerHTML = `
                     <td class="px-6 py-4">
                         <a href="#" onclick="openDocument('${doc.id}', '${doc.link}'); return false;" class="flex items-center gap-3 group-hover:text-blue-600 transition-colors">
-                            <i class="fab fa-google-drive text-slate-400 group-hover:text-blue-500"></i>
+                            <i class="${iconInfo.class} ${iconInfo.color} ${iconInfo.hover} text-lg w-5 text-center transition-colors"></i>
                             <span class="font-medium text-slate-800 group-hover:text-blue-600 truncate max-w-xs md:max-w-md" title="${doc.title}">${doc.title}</span>
                         </a>
                     </td>
