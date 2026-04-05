@@ -298,26 +298,16 @@
             isLoading: false
         };
 
-        const dummyUsers = [
-            { id: 'u_admin', username: 'admin', password: '123', role: 'admin' },
-            { id: 'u_test', username: 'test', password: '123', role: 'collaborator' }
+        // 僅保留一組預設管理員帳號供初始登入
+        const defaultUsers = [
+            { id: 'u_admin', username: 'admin', password: '123', role: 'admin' }
         ];
 
-        const dummyCategories = ['學校行政', '評量訊息', '數學', '國語', '其他'];
+        // 預設基本分類
+        const defaultCategories = ['行政', '財務', '專案', '技術', '其他'];
 
-        const dummyData = Array.from({ length: 25 }, (_, i) => {
-            const randomTime = Date.now() - Math.floor(Math.random() * 10000000000);
-            return {
-                id: 'doc_' + Date.now() + i,
-                title: `2026年度${['營運', '行銷', '技術', '人資'][i % 4]}計畫書 v${(i % 3) + 1}.0`,
-                category: dummyCategories[i % 5],
-                link: 'https://drive.google.com/drive/my-drive',
-                date: new Date(randomTime).toISOString().split('T')[0],
-                timestamp: randomTime,
-                author: i % 3 === 0 ? 'test' : 'admin',
-                views: Math.floor(Math.random() * 50) // 模擬觀看次數
-            };
-        });
+        // 初始文件為空陣列，移除測試資料
+        const defaultData = [];
 
         const colorClasses = [
             'bg-purple-100 text-purple-700', 'bg-green-100 text-green-700', 
@@ -396,9 +386,9 @@
                         }
                     } else {
                         await new Promise(r => setTimeout(r, 500));
-                        state.users = JSON.parse(localStorage.getItem('cloud_users')) || dummyUsers;
-                        state.categories = JSON.parse(localStorage.getItem('cloud_categories')) || dummyCategories;
-                        state.documents = JSON.parse(localStorage.getItem('cloud_docs')) || dummyData;
+                        state.users = JSON.parse(localStorage.getItem('cloud_users')) || defaultUsers;
+                        state.categories = JSON.parse(localStorage.getItem('cloud_categories')) || defaultCategories;
+                        state.documents = JSON.parse(localStorage.getItem('cloud_docs')) || defaultData;
                         
                         // 初始化 localStorage 如果是空的
                         if(!localStorage.getItem('cloud_users')) localStorage.setItem('cloud_users', JSON.stringify(state.users));
