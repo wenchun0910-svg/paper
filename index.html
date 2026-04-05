@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>共用雲端文件管理系統</title>
+    <title>網站文件管理系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -32,8 +32,8 @@
                 <div class="bg-blue-100 text-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i class="fas fa-cloud-arrow-up text-2xl"></i>
                 </div>
-                <h1 class="text-2xl font-bold text-slate-800">雲端文件管理系統</h1>
-                <p class="text-slate-500 mt-2">請登入以管理共用文件</p>
+                <h1 class="text-2xl font-bold text-slate-800">網站文件管理系統</h1>
+                <p class="text-slate-500 mt-2">請登入以管理網站文件</p>
             </div>
             
             <form id="login-form" class="space-y-5">
@@ -65,7 +65,7 @@
                 <div class="flex justify-between items-center h-16">
                     <div class="flex items-center gap-3">
                         <i class="fas fa-cloud text-blue-600 text-xl"></i>
-                        <h1 class="text-xl font-bold text-slate-800">文件管理中心</h1>
+                        <h1 class="text-xl font-bold text-slate-800">網站文件管理中心</h1>
                     </div>
                     <div class="flex items-center gap-4">
                         <div id="user-info" class="hidden flex items-center gap-4">
@@ -99,7 +99,7 @@
                             <i class="fas fa-folder text-slate-400"></i>
                         </div>
                         <select id="category-filter" class="pl-10 w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm appearance-none bg-white">
-                            <option value="全部">所有分類文件</option>
+                            <option value="全部">所有分類網站文件</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                             <i class="fas fa-chevron-down text-slate-400 text-xs"></i>
@@ -107,7 +107,7 @@
                     </div>
                 </div>
                 <button id="add-doc-btn" class="hidden w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center justify-center gap-2">
-                    <i class="fas fa-plus"></i> 新增文件
+                    <i class="fas fa-plus"></i> 新增網站文件
                 </button>
             </div>
 
@@ -116,7 +116,7 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">
-                                <th class="px-6 py-4 font-medium">文件名稱</th>
+                                <th class="px-6 py-4 font-medium">網站文件名稱</th>
                                 <th class="px-6 py-4 font-medium w-28">分類</th>
                                 <th class="px-6 py-4 font-medium w-28">建立者</th>
                                 <th class="px-6 py-4 font-medium w-24 text-center">觀看</th>
@@ -131,7 +131,7 @@
                 
                 <div id="empty-state" class="hidden py-12 text-center">
                     <div class="text-slate-300 mb-3"><i class="fas fa-folder-open text-4xl"></i></div>
-                    <p class="text-slate-500">沒有找到符合的文件</p>
+                    <p class="text-slate-500">沒有找到符合的網站文件</p>
                 </div>
 
                 <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between">
@@ -156,7 +156,7 @@
     <div id="doc-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
             <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <h3 id="modal-title" class="text-lg font-bold text-slate-800">新增文件</h3>
+                <h3 id="modal-title" class="text-lg font-bold text-slate-800">新增網站文件</h3>
                 <button id="close-modal" class="text-slate-400 hover:text-slate-600 transition-colors">
                     <i class="fas fa-times text-xl"></i>
                 </button>
@@ -164,16 +164,16 @@
             <form id="doc-form" class="p-6 space-y-4">
                 <input type="hidden" id="doc-id">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">文件名稱 <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">網站文件名稱 <span class="text-red-500">*</span></label>
                     <input type="text" id="doc-title" required class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">文件分類 <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">網站文件分類 <span class="text-red-500">*</span></label>
                     <select id="doc-category" required class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white">
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">雲端硬碟連結 (URL) <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">網站文件連結 (URL) <span class="text-red-500">*</span></label>
                     <input type="url" id="doc-link" required class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="https://drive.google.com/...">
                 </div>
                 <div class="pt-4 flex justify-end gap-3">
