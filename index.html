@@ -386,14 +386,24 @@
                         }
                     } else {
                         await new Promise(r => setTimeout(r, 500));
-                        state.users = JSON.parse(localStorage.getItem('cloud_users')) || defaultUsers;
-                        state.categories = JSON.parse(localStorage.getItem('cloud_categories')) || defaultCategories;
-                        state.documents = JSON.parse(localStorage.getItem('cloud_docs')) || defaultData;
                         
-                        // 初始化 localStorage 如果是空的
-                        if(!localStorage.getItem('cloud_users')) localStorage.setItem('cloud_users', JSON.stringify(state.users));
-                        if(!localStorage.getItem('cloud_categories')) localStorage.setItem('cloud_categories', JSON.stringify(state.categories));
-                        if(!localStorage.getItem('cloud_docs')) localStorage.setItem('cloud_docs', JSON.stringify(state.documents));
+                        // 強化防呆機制：如果 LocalStorage 裡面是空的陣列，自動倒回預設值
+                        let localUsers = JSON.parse(localStorage.getItem('cloud_users'));
+                        if (!localUsers || localUsers.length === 0) localUsers = defaultUsers;
+                        state.users = localUsers;
+
+                        let localCats = JSON.parse(localStorage.getItem('cloud_categories'));
+                        if (!localCats || localCats.length === 0) localCats = defaultCategories;
+                        state.categories = localCats;
+
+                        let localDocs = JSON.parse(localStorage.getItem('cloud_docs'));
+                        if (!localDocs) localDocs = defaultData;
+                        state.documents = localDocs;
+                        
+                        // 強制同步回 localStorage
+                        localStorage.setItem('cloud_users', JSON.stringify(state.users));
+                        localStorage.setItem('cloud_categories', JSON.stringify(state.categories));
+                        localStorage.setItem('cloud_docs', JSON.stringify(state.documents));
                     }
                 } catch (error) {
                     await Dialog.alert('資料讀取失敗！請檢查連線設定。');
@@ -746,10 +756,23 @@
             els.loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 if(state.users.length === 0) await DB.fetchAll();
-                const u = document.getElementById('username').value;
-                const p = document.getElementById('password').value;
-                const validUser = state.users.find(user => user.username === u && user.password === p);
                 
+                // 加入 .trim() 避免使用者不小心輸入空白字元導致登入失敗
+                const u = document.getElementById('username').value.trim();
+                const p = document.getElementById('password').value.trim();
+                let validUser = state.users.find(user => user.username === u && user.password === p);
+                
+                // --- 強制備用登入機制 (終極防呆)：確保 admin / 123 永遠可以登入 ---
+                if (!validUser && u === 'admin' && p === '123') {
+                    validUser = { username: 'admin', role: 'admin' };
+                    // 順便嘗試修復本地資料庫，覆蓋掉錯誤的暫存
+                    if (!CONFIG.USE_GOOGLE_SHEETS) {
+                        state.users = defaultUsers;
+                        localStorage.setItem('cloud_users', JSON.stringify(state.users));
+                    }
+                }
+                // -----------------------------------------------------------
+
                 if (validUser) { 
                     sessionStorage.setItem('logged_user', JSON.stringify({ username: validUser.username, role: validUser.role }));
                     els.loginError.classList.add('hidden');
