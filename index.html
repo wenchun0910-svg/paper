@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>共用雲端文件管理系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#475569',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+    <!-- 1. 登入畫面 -->
+    <div id="login-view" class="min-h-screen flex items-center justify-center p-4 hidden">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100">
+            <div class="text-center mb-8">
+                <div class="bg-blue-100 text-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-cloud-arrow-up text-2xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-800">雲端文件管理系統</h1>
+                <p class="text-slate-500 mt-2">請登入以管理共用文件</p>
+            </div>
+            
+            <form id="login-form" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">帳號</label>
+                    <input type="text" id="username" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="輸入帳號 (管理員: admin / 協作者: test)" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">密碼</label>
+                    <input type="password" id="password" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="輸入密碼 (預設: 123)" required>
+                </div>
+                <div id="login-error" class="text-red-500 text-sm hidden text-center">帳號或密碼錯誤</div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors shadow-md shadow-blue-500/30">
+                    登入系統
+                </button>
+                <div class="text-center mt-4">
+                    <button type="button" id="back-to-dash-btn" class="text-sm text-slate-500 hover:text-slate-700 transition-colors">
+                        <i class="fas fa-arrow-left mr-1"></i>以訪客身分返回瀏覽
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. 系統主畫面 -->
+    <div id="dashboard-view" class="min-h-screen flex flex-col hidden">
+        <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-cloud text-blue-600 text-xl"></i>
+                        <h1 class="text-xl font-bold text-slate-800">文件管理中心</h1>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div id="user-info" class="hidden flex items-center gap-4">
+                            <span class="text-sm text-slate-500 hidden sm:block">目前登入：<span id="current-user-display" class="font-medium text-slate-700"></span> (<span id="current-role-display" class="text-blue-600"></span>)</span>
+                            <button id="manage-users-btn" class="hidden text-sm text-slate-600 hover:text-blue-600 font-medium transition-colors">
+                                <i class="fas fa-cogs mr-1"></i>系統設定
+                            </button>
+                            <button id="logout-btn" class="text-sm text-slate-600 hover:text-red-600 font-medium transition-colors">
+                                <i class="fas fa-sign-out-alt mr-1"></i>登出
+                            </button>
+                        </div>
+                        <button id="login-btn" class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                            <i class="fas fa-sign-in-alt mr-1"></i>管理登入
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                    <div class="relative w-full sm:w-64">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-slate-400"></i>
+                        </div>
+                        <input type="text" id="search-input" class="pl-10 w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="搜尋文件名稱或關鍵字...">
+                    </div>
+                    <div class="relative w-full sm:w-48">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-folder text-slate-400"></i>
+                        </div>
+                        <select id="category-filter" class="pl-10 w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm appearance-none bg-white">
+                            <option value="全部">所有分類文件</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fas fa-chevron-down text-slate-400 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+                <button id="add-doc-btn" class="hidden w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center justify-center gap-2">
+                    <i class="fas fa-plus"></i> 新增文件
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto no-scrollbar">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">
+                                <th class="px-6 py-4 font-medium">文件名稱</th>
+                                <th class="px-6 py-4 font-medium w-28">分類</th>
+                                <th class="px-6 py-4 font-medium w-28">建立者</th>
+                                <th class="px-6 py-4 font-medium w-24 text-center">觀看</th>
+                                <th class="px-6 py-4 font-medium w-36">更新日期</th>
+                                <th id="action-header" class="px-6 py-4 font-medium w-28 text-center hidden">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body" class="divide-y divide-slate-100">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="empty-state" class="hidden py-12 text-center">
+                    <div class="text-slate-300 mb-3"><i class="fas fa-folder-open text-4xl"></i></div>
+                    <p class="text-slate-500">沒有找到符合的文件</p>
+                </div>
+
+                <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between">
+                    <p class="text-sm text-slate-500">
+                        顯示 <span id="page-start" class="font-medium text-slate-700">0</span> 到 <span id="page-end" class="font-medium text-slate-700">0</span> 筆，共 <span id="total-count" class="font-medium text-slate-700">0</span> 筆
+                    </p>
+                    <div class="flex gap-2">
+                        <button id="prev-page" class="px-3 py-1 border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-slate-600">
+                            <i class="fas fa-chevron-left text-xs"></i>
+                        </button>
+                        <span id="page-info" class="px-3 py-1 text-sm font-medium text-slate-700 flex items-center">1 / 1</span>
+                        <button id="next-page" class="px-3 py-1 border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-slate-600">
+                            <i class="fas fa-chevron-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 3. 新增/編輯文件 Modal -->
+    <div id="doc-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <h3 id="modal-title" class="text-lg font-bold text-slate-800">新增文件</h3>
+                <button id="close-modal" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="doc-form" class="p-6 space-y-4">
+                <input type="hidden" id="doc-id">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">文件名稱 <span class="text-red-500">*</span></label>
+                    <input type="text" id="doc-title" required class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">文件分類 <span class="text-red-500">*</span></label>
+                    <select id="doc-category" required class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white">
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">雲端硬碟連結 (URL) <span class="text-red-500">*</span></label>
+                    <input type="url" id="doc-link" required class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="https://drive.google.com/...">
+                </div>
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" id="cancel-modal" class="px-5 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors">取消</button>
+                    <button type="submit" class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors flex items-center gap-2">
+                        <i class="fas fa-save"></i> 儲存
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. 系統設定 (帳號與分類管理) Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <h3 class="text-lg font-bold text-slate-800"><i class="fas fa-cogs text-blue-600 mr-2"></i>系統設定</h3>
+                <button id="close-settings-modal" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto flex-1">
+                <div class="mb-8">
+                    <h4 class="text-md font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2"><i class="fas fa-users-cog mr-2 text-slate-400"></i>帳號管理</h4>
+                    <form id="user-form" class="mb-4 bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-wrap gap-4 items-end">
+                        <div class="flex-1 min-w-[150px]">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">帳號名稱</label>
+                            <input type="text" id="new-username" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                        <div class="flex-1 min-w-[150px]">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">密碼</label>
+                            <input type="text" id="new-password" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                        <div class="w-32">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">權限角色</label>
+                            <select id="new-role" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm bg-white">
+                                <option value="collaborator">協作者</option>
+                                <option value="admin">管理員</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors h-[38px]">
+                            新增帳號
+                        </button>
+                    </form>
+
+                    <div class="border border-slate-200 rounded-lg overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-50 text-slate-500 text-sm border-b border-slate-200">
+                                <tr>
+                                    <th class="px-4 py-3 font-medium">帳號</th>
+                                    <th class="px-4 py-3 font-medium">密碼</th>
+                                    <th class="px-4 py-3 font-medium">身分權限</th>
+                                    <th class="px-4 py-3 font-medium text-center w-24">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body" class="divide-y divide-slate-100 text-sm">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-md font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2"><i class="fas fa-tags mr-2 text-slate-400"></i>文件分類管理</h4>
+                    <form id="category-form" class="mb-4 bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-wrap gap-4 items-end">
+                        <div class="flex-1">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">新增自訂分類</label>
+                            <input type="text" id="new-category-name" required placeholder="例如：年度報表" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors h-[38px] whitespace-nowrap">
+                            新增分類
+                        </button>
+                    </form>
+                    
+                    <div class="bg-white border border-slate-200 rounded-xl p-4">
+                        <p class="text-xs text-slate-500 mb-3">目前的分類清單：</p>
+                        <div id="category-list" class="flex flex-wrap gap-2">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 系統提示/確認對話框 Modal -->
+    <div id="dialog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-[80] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all text-center p-6">
+            <div id="dialog-icon-container" class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i id="dialog-icon" class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+            </div>
+            <h3 id="dialog-title" class="text-lg font-bold text-slate-800 mb-2">提示</h3>
+            <p id="dialog-message" class="text-slate-500 mb-6">訊息內容</p>
+            <div class="flex justify-center gap-3">
+                <button id="dialog-cancel-btn" class="px-5 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors w-full hidden">取消</button>
+                <button id="dialog-confirm-btn" class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors w-full">確定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. 載入中遮罩 -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm hidden z-[60] flex flex-col items-center justify-center">
+        <i class="fas fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
+        <p class="text-slate-600 font-medium" id="loading-text">資料同步中...</p>
+    </div>
+
+    <!-- 7. Javascript 邏輯區 -->
+    <script>
+        const CONFIG = {
+            USE_GOOGLE_SHEETS: false, 
+            GAS_URL: 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL',
+            ITEMS_PER_PAGE: 10
+        };
+
+        let state = {
+            documents: [],
+            filteredDocs: [],
+            users: [],
+            categories: [],
+            currentPage: 1,
+            searchQuery: '',
+            categoryFilter: '全部',
+            isLoading: false
+        };
+
+        const dummyUsers = [
+            { id: 'u_admin', username: 'admin', password: '123', role: 'admin' },
+            { id: 'u_test', username: 'test', password: '123', role: 'collaborator' }
+        ];
+
+        const dummyCategories = ['行政', '財務', '專案', '技術', '其他'];
+
+        const dummyData = Array.from({ length: 25 }, (_, i) => {
+            const randomTime = Date.now() - Math.floor(Math.random() * 10000000000);
+            return {
+                id: 'doc_' + Date.now() + i,
+                title: `2026年度${['營運', '行銷', '技術', '人資'][i % 4]}計畫書 v${(i % 3) + 1}.0`,
+                category: dummyCategories[i % 5],
+                link: 'https://drive.google.com/drive/my-drive',
+                date: new Date(randomTime).toISOString().split('T')[0],
+                timestamp: randomTime,
+                author: i % 3 === 0 ? 'test' : 'admin',
+                views: Math.floor(Math.random() * 50) // 模擬觀看次數
+            };
+        });
+
+        const colorClasses = [
+            'bg-purple-100 text-purple-700', 'bg-green-100 text-green-700', 
+            'bg-blue-100 text-blue-700', 'bg-orange-100 text-orange-700', 
+            'bg-teal-100 text-teal-700', 'bg-pink-100 text-pink-700', 
+            'bg-indigo-100 text-indigo-700', 'bg-rose-100 text-rose-700',
+            'bg-cyan-100 text-cyan-700', 'bg-amber-100 text-amber-700'
+        ];
+
+        const getColorClass = (str) => {
+            if (!str) return 'bg-gray-100 text-gray-700';
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return colorClasses[Math.abs(hash) % colorClasses.length];
+        };
+
+        const Dialog = {
+            show(title, message, isConfirm = false) {
+                return new Promise((resolve) => {
+                    const modal = document.getElementById('dialog-modal');
+                    const titleEl = document.getElementById('dialog-title');
+                    const msgEl = document.getElementById('dialog-message');
+                    const cancelBtn = document.getElementById('dialog-cancel-btn');
+                    const confirmBtn = document.getElementById('dialog-confirm-btn');
+                    const iconContainer = document.getElementById('dialog-icon-container');
+                    const icon = document.getElementById('dialog-icon');
+
+                    titleEl.textContent = title;
+                    msgEl.textContent = message;
+
+                    if (isConfirm) {
+                        cancelBtn.classList.remove('hidden');
+                        confirmBtn.className = 'px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors w-full';
+                        iconContainer.className = 'w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4';
+                        icon.className = 'fas fa-exclamation-triangle text-2xl text-red-600';
+                    } else {
+                        cancelBtn.classList.add('hidden');
+                        confirmBtn.className = 'px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors w-full';
+                        iconContainer.className = 'w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4';
+                        icon.className = 'fas fa-info-circle text-2xl text-blue-600';
+                    }
+
+                    modal.classList.remove('hidden');
+
+                    const cleanUp = () => {
+                        modal.classList.add('hidden');
+                        cancelBtn.removeEventListener('click', onCancel);
+                        confirmBtn.removeEventListener('click', onConfirm);
+                    };
+
+                    const onCancel = () => { cleanUp(); resolve(false); };
+                    const onConfirm = () => { cleanUp(); resolve(true); };
+
+                    cancelBtn.addEventListener('click', onCancel);
+                    confirmBtn.addEventListener('click', onConfirm);
+                });
+            },
+            alert(message) { return this.show('系統提示', message, false); },
+            confirm(message) { return this.show('確認動作', message, true); }
+        };
+
+        // 全新的 DB API，支援從 Google Sheets 拉取/寫入 3 張資料表
+        const DB = {
+            async fetchAll() {
+                showLoading('讀取資料庫中...');
+                try {
+                    if (CONFIG.USE_GOOGLE_SHEETS) {
+                        const response = await fetch(`${CONFIG.GAS_URL}?action=read`);
+                        const data = await response.json();
+                        if(data.success) {
+                            state.documents = data.documents || [];
+                            state.users = data.users || [];
+                            state.categories = data.categories || [];
+                        }
+                    } else {
+                        await new Promise(r => setTimeout(r, 500));
+                        state.users = JSON.parse(localStorage.getItem('cloud_users')) || dummyUsers;
+                        state.categories = JSON.parse(localStorage.getItem('cloud_categories')) || dummyCategories;
+                        state.documents = JSON.parse(localStorage.getItem('cloud_docs')) || dummyData;
+                        
+                        // 初始化 localStorage 如果是空的
+                        if(!localStorage.getItem('cloud_users')) localStorage.setItem('cloud_users', JSON.stringify(state.users));
+                        if(!localStorage.getItem('cloud_categories')) localStorage.setItem('cloud_categories', JSON.stringify(state.categories));
+                        if(!localStorage.getItem('cloud_docs')) localStorage.setItem('cloud_docs', JSON.stringify(state.documents));
+                    }
+                } catch (error) {
+                    await Dialog.alert('資料讀取失敗！請檢查連線設定。');
+                    console.error(error);
+                } finally {
+                    hideLoading();
+                }
+            },
+
+            async save(docData) {
+                showLoading('儲存文件中...');
+                try {
+                    if (CONFIG.USE_GOOGLE_SHEETS) {
+                        const action = docData.id ? 'updateDoc' : 'createDoc';
+                        await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: action, data: docData }) });
+                        await this.fetchAll();
+                    } else {
+                        await new Promise(r => setTimeout(r, 400));
+                        if (docData.id) {
+                            const index = state.documents.findIndex(d => d.id === docData.id);
+                            if (index > -1) state.documents[index] = { ...state.documents[index], ...docData, timestamp: Date.now(), date: new Date().toISOString().split('T')[0] };
+                        } else {
+                            docData.id = 'doc_' + Date.now();
+                            docData.timestamp = Date.now();
+                            docData.date = new Date().toISOString().split('T')[0];
+                            docData.views = 0;
+                            state.documents.push(docData);
+                        }
+                        localStorage.setItem('cloud_docs', JSON.stringify(state.documents));
+                    }
+                } finally {
+                    hideLoading();
+                }
+            },
+
+            async delete(id) {
+                if (!(await Dialog.confirm('確定要刪除這份文件嗎？此動作無法復原。'))) return false;
+                showLoading('刪除資料中...');
+                try {
+                    if (CONFIG.USE_GOOGLE_SHEETS) {
+                        await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteDoc', id: id }) });
+                        await this.fetchAll();
+                    } else {
+                        await new Promise(r => setTimeout(r, 400));
+                        state.documents = state.documents.filter(d => d.id !== id);
+                        localStorage.setItem('cloud_docs', JSON.stringify(state.documents));
+                    }
+                    return true;
+                } finally {
+                    hideLoading();
+                }
+            },
+
+            // 觀看次數 + 1
+            async incrementView(id) {
+                if (CONFIG.USE_GOOGLE_SHEETS) {
+                    // 非同步發送，不阻擋畫面
+                    fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'incrementView', id: id }) })
+                        .catch(err => console.error("計數更新失敗", err));
+                } else {
+                    const index = state.documents.findIndex(d => d.id === id);
+                    if (index > -1) {
+                        state.documents[index].views = (Number(state.documents[index].views) || 0) + 1;
+                        localStorage.setItem('cloud_docs', JSON.stringify(state.documents));
+                    }
+                }
+            },
+
+            async saveUser(userData) {
+                if (CONFIG.USE_GOOGLE_SHEETS) {
+                    showLoading('新增帳號中...');
+                    await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'createUser', data: userData }) });
+                    await this.fetchAll();
+                    hideLoading();
+                } else {
+                    userData.id = 'u_' + Date.now();
+                    state.users.push(userData);
+                    localStorage.setItem('cloud_users', JSON.stringify(state.users));
+                }
+            },
+
+            async deleteUser(id) {
+                if (CONFIG.USE_GOOGLE_SHEETS) {
+                    showLoading('刪除帳號中...');
+                    await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteUser', id: id }) });
+                    await this.fetchAll();
+                    hideLoading();
+                } else {
+                    state.users = state.users.filter(u => u.id !== id);
+                    localStorage.setItem('cloud_users', JSON.stringify(state.users));
+                }
+            },
+
+            async saveCategory(name) {
+                if (!state.categories.includes(name)) {
+                    if (CONFIG.USE_GOOGLE_SHEETS) {
+                        showLoading('新增分類中...');
+                        await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'createCategory', name: name }) });
+                        await this.fetchAll();
+                        hideLoading();
+                    } else {
+                        state.categories.push(name);
+                        localStorage.setItem('cloud_categories', JSON.stringify(state.categories));
+                    }
+                }
+            },
+
+            async deleteCategory(name) {
+                if (CONFIG.USE_GOOGLE_SHEETS) {
+                    showLoading('刪除分類中...');
+                    await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteCategory', name: name }) });
+                    await this.fetchAll();
+                    hideLoading();
+                } else {
+                    state.categories = state.categories.filter(c => c !== name);
+                    localStorage.setItem('cloud_categories', JSON.stringify(state.categories));
+                }
+            }
+        };
+
+        const els = {
+            loginView: document.getElementById('login-view'),
+            dashboardView: document.getElementById('dashboard-view'),
+            loginForm: document.getElementById('login-form'),
+            loginError: document.getElementById('login-error'),
+            backToDashBtn: document.getElementById('back-to-dash-btn'),
+            loginBtn: document.getElementById('login-btn'),
+            logoutBtn: document.getElementById('logout-btn'),
+            manageUsersBtn: document.getElementById('manage-users-btn'),
+            userInfo: document.getElementById('user-info'),
+            searchInput: document.getElementById('search-input'),
+            categoryFilter: document.getElementById('category-filter'),
+            tableBody: document.getElementById('table-body'),
+            emptyState: document.getElementById('empty-state'),
+            prevBtn: document.getElementById('prev-page'),
+            nextBtn: document.getElementById('next-page'),
+            pageInfo: document.getElementById('page-info'),
+            pageStart: document.getElementById('page-start'),
+            pageEnd: document.getElementById('page-end'),
+            totalCount: document.getElementById('total-count'),
+            addBtn: document.getElementById('add-doc-btn'),
+            actionHeader: document.getElementById('action-header'),
+            modal: document.getElementById('doc-modal'),
+            modalTitle: document.getElementById('modal-title'),
+            docForm: document.getElementById('doc-form'),
+            docCategory: document.getElementById('doc-category'),
+            closeModalBtn: document.getElementById('close-modal'),
+            cancelModalBtn: document.getElementById('cancel-modal'),
+            settingsModal: document.getElementById('settings-modal'),
+            closeSettingsModalBtn: document.getElementById('close-settings-modal'),
+            userForm: document.getElementById('user-form'),
+            usersTableBody: document.getElementById('users-table-body'),
+            categoryForm: document.getElementById('category-form'),
+            categoryList: document.getElementById('category-list'),
+            loadingOverlay: document.getElementById('loading-overlay'),
+            loadingText: document.getElementById('loading-text')
+        };
+
+        function init() {
+            showDashboard();
+            checkLoginStatus();
+            bindEvents();
+        }
+
+        function checkLoginStatus() {
+            const userStr = sessionStorage.getItem('logged_user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                document.getElementById('current-user-display').textContent = user.username;
+                document.getElementById('current-role-display').textContent = user.role === 'admin' ? '管理員' : '協作者';
+                
+                els.userInfo.classList.remove('hidden');
+                els.loginBtn.classList.add('hidden');
+                els.addBtn.classList.remove('hidden');
+                els.actionHeader.classList.remove('hidden');
+                
+                if(user.role === 'admin') {
+                    els.manageUsersBtn.classList.remove('hidden');
+                } else {
+                    els.manageUsersBtn.classList.add('hidden');
+                }
+            } else {
+                els.userInfo.classList.add('hidden');
+                els.loginBtn.classList.remove('hidden');
+                els.addBtn.classList.add('hidden');
+                els.actionHeader.classList.add('hidden');
+                els.manageUsersBtn.classList.add('hidden');
+            }
+        }
+
+        function showLogin() {
+            els.loginView.classList.remove('hidden');
+            els.dashboardView.classList.add('hidden');
+        }
+
+        async function showDashboard() {
+            els.loginView.classList.add('hidden');
+            els.dashboardView.classList.remove('hidden');
+            if(state.documents.length === 0) {
+                await DB.fetchAll();
+            }
+            renderCategoryOptions();
+            applyFiltersAndRender();
+        }
+
+        function renderCategoryOptions() {
+            const currentFilter = els.categoryFilter.value;
+            const currentDocCat = els.docCategory.value;
+
+            els.categoryFilter.innerHTML = '<option value="全部">所有分類文件</option>';
+            els.docCategory.innerHTML = '';
+
+            state.categories.forEach(cat => {
+                els.categoryFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
+                els.docCategory.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+
+            if (state.categories.includes(currentFilter) || currentFilter === '全部') els.categoryFilter.value = currentFilter;
+            if (state.categories.includes(currentDocCat)) els.docCategory.value = currentDocCat;
+        }
+
+        function applyFiltersAndRender() {
+            let filtered = state.documents.filter(doc => {
+                const matchCategory = state.categoryFilter === '全部' || doc.category === state.categoryFilter;
+                const matchSearch = doc.title.toLowerCase().includes(state.searchQuery.toLowerCase()) || 
+                                    doc.category.includes(state.searchQuery);
+                return matchCategory && matchSearch;
+            });
+
+            filtered.sort((a, b) => {
+                const dateA = new Date(a.date).getTime();
+                const dateB = new Date(b.date).getTime();
+                if (dateA === dateB) {
+                    return (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0);
+                }
+                return dateB - dateA;
+            });
+            state.filteredDocs = filtered;
+
+            const totalItems = filtered.length;
+            const totalPages = Math.ceil(totalItems / CONFIG.ITEMS_PER_PAGE) || 1;
+            
+            if (state.currentPage > totalPages) state.currentPage = totalPages;
+            if (state.currentPage < 1) state.currentPage = 1;
+
+            const startIndex = (state.currentPage - 1) * CONFIG.ITEMS_PER_PAGE;
+            const endIndex = Math.min(startIndex + CONFIG.ITEMS_PER_PAGE, totalItems);
+            const currentDocs = filtered.slice(startIndex, endIndex);
+
+            renderTable(currentDocs);
+            renderPagination(startIndex + 1, endIndex, totalItems, totalPages);
+        }
+
+        // 點擊文件時觸發：開啟連結並增加計數
+        window.openDocument = (id, link) => {
+            window.open(link, '_blank');
+            
+            // 畫面計數即時 +1
+            const doc = state.documents.find(d => d.id === id);
+            if (doc) {
+                doc.views = (Number(doc.views) || 0) + 1;
+                applyFiltersAndRender();
+            }
+            
+            // 背景呼叫資料庫 API
+            DB.incrementView(id);
+        };
+
+        function renderTable(docs) {
+            els.tableBody.innerHTML = '';
+            
+            if (docs.length === 0) {
+                els.tableBody.parentElement.classList.add('hidden');
+                els.emptyState.classList.remove('hidden');
+                return;
+            }
+
+            els.tableBody.parentElement.classList.remove('hidden');
+            els.emptyState.classList.add('hidden');
+
+            const userStr = sessionStorage.getItem('logged_user');
+            const currentUser = userStr ? JSON.parse(userStr) : null;
+
+            docs.forEach(doc => {
+                const colorClass = getColorClass(doc.category);
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-blue-50/50 transition-colors group';
+                
+                let actionHtml = '';
+                if (currentUser) {
+                    const isOwner = doc.author === currentUser.username;
+                    const isAdmin = currentUser.role === 'admin';
+                    
+                    if (isAdmin || isOwner) {
+                        actionHtml = `
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center gap-3">
+                                <button onclick="editDocument('${doc.id}')" class="text-slate-400 hover:text-blue-600 transition-colors" title="編輯">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteDocument('${doc.id}')" class="text-slate-400 hover:text-red-600 transition-colors" title="刪除">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>`;
+                    } else {
+                        actionHtml = `<td class="px-6 py-4 text-center text-slate-300 text-xs font-medium">無權限</td>`;
+                    }
+                }
+
+                const viewsCount = Number(doc.views) || 0;
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4">
+                        <a href="#" onclick="openDocument('${doc.id}', '${doc.link}'); return false;" class="flex items-center gap-3 group-hover:text-blue-600 transition-colors">
+                            <i class="fab fa-google-drive text-slate-400 group-hover:text-blue-500"></i>
+                            <span class="font-medium text-slate-800 group-hover:text-blue-600 truncate max-w-xs md:max-w-md" title="${doc.title}">${doc.title}</span>
+                        </a>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${colorClass}">
+                            ${doc.category}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-slate-600">
+                        <i class="fas fa-user-circle mr-1 text-slate-400"></i>${doc.author || '未知'}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-slate-500 text-center font-medium">
+                        ${viewsCount > 0 ? `<span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">${viewsCount}</span>` : `<span class="text-slate-300">0</span>`}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-slate-500">
+                        ${doc.date}
+                    </td>
+                    ${actionHtml}
+                `;
+                els.tableBody.appendChild(tr);
+            });
+        }
+
+        function renderPagination(start, end, total, totalPages) {
+            els.pageStart.textContent = total === 0 ? 0 : start;
+            els.pageEnd.textContent = end;
+            els.totalCount.textContent = total;
+            els.pageInfo.textContent = `${state.currentPage} / ${totalPages}`;
+            els.prevBtn.disabled = state.currentPage <= 1;
+            els.nextBtn.disabled = state.currentPage >= totalPages;
+        }
+
+        function bindEvents() {
+            els.loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if(state.users.length === 0) await DB.fetchAll();
+                const u = document.getElementById('username').value;
+                const p = document.getElementById('password').value;
+                const validUser = state.users.find(user => user.username === u && user.password === p);
+                
+                if (validUser) { 
+                    sessionStorage.setItem('logged_user', JSON.stringify({ username: validUser.username, role: validUser.role }));
+                    els.loginError.classList.add('hidden');
+                    els.loginForm.reset();
+                    checkLoginStatus();
+                    showDashboard();
+                } else {
+                    els.loginError.classList.remove('hidden');
+                }
+            });
+
+            els.loginBtn.addEventListener('click', showLogin);
+            els.backToDashBtn.addEventListener('click', () => {
+                els.loginForm.reset();
+                els.loginError.classList.add('hidden');
+                showDashboard();
+            });
+
+            els.logoutBtn.addEventListener('click', () => {
+                sessionStorage.removeItem('logged_user');
+                checkLoginStatus();
+                applyFiltersAndRender();
+            });
+
+            els.searchInput.addEventListener('input', (e) => {
+                state.searchQuery = e.target.value;
+                state.currentPage = 1;
+                applyFiltersAndRender();
+            });
+
+            els.categoryFilter.addEventListener('change', (e) => {
+                state.categoryFilter = e.target.value;
+                state.currentPage = 1;
+                applyFiltersAndRender();
+            });
+
+            els.prevBtn.addEventListener('click', () => {
+                if (state.currentPage > 1) {
+                    state.currentPage--;
+                    applyFiltersAndRender();
+                }
+            });
+
+            els.nextBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(state.filteredDocs.length / CONFIG.ITEMS_PER_PAGE);
+                if (state.currentPage < totalPages) {
+                    state.currentPage++;
+                    applyFiltersAndRender();
+                }
+            });
+
+            els.addBtn.addEventListener('click', () => openModal());
+            els.closeModalBtn.addEventListener('click', closeModal);
+            els.cancelModalBtn.addEventListener('click', closeModal);
+
+            els.docForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const currentUser = JSON.parse(sessionStorage.getItem('logged_user'));
+                const docId = document.getElementById('doc-id').value;
+                let originalDoc = docId ? state.documents.find(d => d.id === docId) : null;
+
+                const docData = {
+                    id: docId,
+                    title: document.getElementById('doc-title').value,
+                    category: document.getElementById('doc-category').value,
+                    link: document.getElementById('doc-link').value,
+                    author: originalDoc ? originalDoc.author : currentUser.username
+                };
+                
+                await DB.save(docData);
+                closeModal();
+                applyFiltersAndRender();
+            });
+
+            els.manageUsersBtn.addEventListener('click', () => {
+                renderSettingsData();
+                els.settingsModal.classList.remove('hidden');
+            });
+            
+            els.closeSettingsModalBtn.addEventListener('click', () => {
+                els.settingsModal.classList.add('hidden');
+            });
+
+            els.userForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const u = document.getElementById('new-username').value;
+                const p = document.getElementById('new-password').value;
+                const r = document.getElementById('new-role').value;
+                
+                if(state.users.some(user => user.username === u)) {
+                    await Dialog.alert('此帳號名稱已存在！');
+                    return;
+                }
+                
+                await DB.saveUser({ username: u, password: p, role: r });
+                els.userForm.reset();
+                renderSettingsData();
+            });
+
+            els.categoryForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('new-category-name').value.trim();
+                
+                if(state.categories.includes(name)) {
+                    await Dialog.alert('此分類已經存在！');
+                    return;
+                }
+                
+                await DB.saveCategory(name);
+                els.categoryForm.reset();
+                renderSettingsData();
+                renderCategoryOptions();
+            });
+        }
+
+        function renderSettingsData() {
+            els.usersTableBody.innerHTML = '';
+            const currentUser = JSON.parse(sessionStorage.getItem('logged_user'));
+
+            state.users.forEach(user => {
+                const isSelf = user.username === currentUser.username;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-medium text-slate-800">${user.username}</td>
+                    <td class="px-4 py-3 text-slate-500">${user.password}</td>
+                    <td class="px-4 py-3">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${user.role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}">
+                            ${user.role === 'admin' ? '管理員' : '協作者'}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        ${isSelf ? '<span class="text-xs text-slate-400 font-medium tracking-wide">目前登入</span>' : 
+                        `<button onclick="deleteSystemUser('${user.id}')" class="text-slate-400 hover:text-red-500 transition-colors" title="刪除帳號">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>`}
+                    </td>
+                `;
+                els.usersTableBody.appendChild(tr);
+            });
+
+            els.categoryList.innerHTML = '';
+            state.categories.forEach(cat => {
+                const colorClass = getColorClass(cat);
+                els.categoryList.innerHTML += `
+                    <div class="flex items-center gap-2 ${colorClass} px-3 py-1.5 rounded-lg text-sm font-medium border border-white shadow-sm">
+                        <span>${cat}</span>
+                        <button onclick="deleteSystemCategory('${cat}')" class="opacity-70 hover:opacity-100 hover:text-red-600 transition-all ml-1">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        window.deleteSystemUser = async (id) => {
+            if(await Dialog.confirm('確定要永久刪除此帳號嗎？')) {
+                await DB.deleteUser(id);
+                renderSettingsData();
+            }
+        };
+
+        window.deleteSystemCategory = async (name) => {
+            if(await Dialog.confirm(`確定要刪除分類「${name}」嗎？\n(注意：已標記此分類的文件不會被刪除，但下拉選單中將不再顯示此分類)`)) {
+                await DB.deleteCategory(name);
+                renderSettingsData();
+                renderCategoryOptions();
+                if (state.categoryFilter === name) {
+                    state.categoryFilter = '全部';
+                    applyFiltersAndRender();
+                }
+            }
+        };
+
+        function openModal(doc = null) {
+            els.docForm.reset();
+            if (doc) {
+                els.modalTitle.textContent = '編輯文件';
+                document.getElementById('doc-id').value = doc.id;
+                document.getElementById('doc-title').value = doc.title;
+                document.getElementById('doc-category').value = doc.category;
+                document.getElementById('doc-link').value = doc.link;
+            } else {
+                els.modalTitle.textContent = '新增文件';
+                document.getElementById('doc-id').value = '';
+                if(state.categories.length > 0) els.docCategory.value = state.categories[0];
+            }
+            els.modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            els.modal.classList.add('hidden');
+        }
+
+        window.editDocument = (id) => {
+            const doc = state.documents.find(d => d.id === id);
+            if (doc) openModal(doc);
+        };
+
+        window.deleteDocument = async (id) => {
+            const success = await DB.delete(id);
+            if (success) applyFiltersAndRender();
+        };
+
+        function showLoading(text) {
+            els.loadingText.textContent = text;
+            els.loadingOverlay.classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            els.loadingOverlay.classList.add('hidden');
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
