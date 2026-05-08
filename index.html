@@ -115,6 +115,9 @@
                             <button id="manage-users-btn" class="hidden text-sm text-ink hover:text-primary font-serif tracking-wider transition-colors">
                                 系統設定
                             </button>
+                            <button id="change-pwd-btn" class="text-sm text-ink hover:text-primary font-serif tracking-wider transition-colors">
+                                變更密碼
+                            </button>
                             <button id="logout-btn" class="text-sm text-ink hover:text-accent font-serif tracking-wider transition-colors">
                                 登出
                             </button>
@@ -319,6 +322,38 @@
         </div>
     </div>
 
+    <!-- 修改密碼 Modal -->
+    <div id="pwd-modal" class="fixed inset-0 bg-ink/30 backdrop-blur-[2px] hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-paper rounded-sm shadow-2xl w-full max-w-sm border border-zen-border overflow-hidden transform transition-all">
+            <div class="px-8 py-6 border-b border-zen-border flex justify-between items-center bg-surface relative">
+                <h3 class="text-lg font-serif font-bold text-ink tracking-widest">變更密碼</h3>
+                <button id="close-pwd-modal" class="text-slate-400 hover:text-primary transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="pwd-form" class="p-8 space-y-6">
+                <div>
+                    <label class="block text-sm font-serif text-ink mb-2 tracking-wider">舊密碼 <span class="text-accent ml-1">*</span></label>
+                    <input type="password" id="pwd-old" required class="w-full px-4 py-3 rounded-sm border border-zen-border bg-surface focus:bg-white transition-colors text-ink font-sans text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-serif text-ink mb-2 tracking-wider">新密碼 <span class="text-accent ml-1">*</span></label>
+                    <input type="password" id="pwd-new" required class="w-full px-4 py-3 rounded-sm border border-zen-border bg-surface focus:bg-white transition-colors text-ink font-sans text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-serif text-ink mb-2 tracking-wider">確認新密碼 <span class="text-accent ml-1">*</span></label>
+                    <input type="password" id="pwd-confirm" required class="w-full px-4 py-3 rounded-sm border border-zen-border bg-surface focus:bg-white transition-colors text-ink font-sans text-sm">
+                </div>
+                <div class="pt-6 flex justify-end gap-3 border-t border-zen-border mt-8">
+                    <button type="button" id="cancel-pwd-modal" class="px-6 py-2.5 rounded-sm border border-zen-border text-slate-500 hover:text-ink font-serif tracking-widest transition-all bg-surface hover:bg-white">取消</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-sm bg-primary hover:bg-primary-hover text-white font-serif tracking-widest transition-all shadow-sm">
+                        確認變更
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- 5. 系統提示/確認對話框 Modal -->
     <div id="dialog-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-[2px] hidden z-[80] flex items-center justify-center p-4">
         <div class="bg-paper rounded-sm shadow-2xl w-full max-w-sm border border-zen-border overflow-hidden transform transition-all text-center p-10">
@@ -344,11 +379,11 @@
     <!-- 7. Javascript 邏輯區 (Firebase 模組化串接) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === Firebase 初始化 ===
-        const firebaseConfig = {
+       const firebaseConfig = {
   apiKey: "AIzaSyDa0NveTZKEo5mODD3XhX_9bA_bPOtcPlQ",
   authDomain: "infor-aded2.firebaseapp.com",
   projectId: "infor-aded2",
@@ -376,7 +411,7 @@
         };
 
         const defaultUsers = [
-            { id: 'u_admin', username: 'admin', password: 'Chun6680', role: 'admin' }
+            { id: 'u_admin', username: 'admin', password: '123', role: 'admin' }
         ];
         const defaultCategories = ['生活', '科技', '休閒', '學習', '其他'];
 
@@ -504,7 +539,7 @@
                     }
 
                 } catch (error) {
-                    await Dialog.alert('讀取失敗，請確認網路連線。');
+                    await Dialog.alert('讀取失敗，請確認網路連線或權限設定。');
                     console.error(error);
                 } finally {
                     hideLoading();
@@ -512,7 +547,7 @@
             },
 
             async save(docData) {
-                if (!fbUser) return;
+                if (!fbUser) { await Dialog.alert('資料庫尚未連線或無權限，請重新整理'); return false; }
                 showLoading('儲存中...');
                 try {
                     if (docData.id) {
@@ -528,6 +563,11 @@
                     }
                     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'articles', docData.id), docData);
                     await this.fetchAll();
+                    return true;
+                } catch (e) {
+                    console.error(e);
+                    await Dialog.alert('儲存失敗：權限不足或網路異常。');
+                    return false;
                 } finally {
                     hideLoading();
                 }
@@ -541,6 +581,10 @@
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'articles', id));
                     await this.fetchAll();
                     return true;
+                } catch (e) {
+                    console.error(e);
+                    await Dialog.alert('刪除失敗：權限不足或網路異常。');
+                    return false;
                 } finally {
                     hideLoading();
                 }
@@ -558,44 +602,60 @@
             },
 
             async saveUser(userData) {
-                if (!fbUser) return;
+                if (!fbUser) return false;
                 showLoading('處理中...');
                 try {
                     if (!userData.id) userData.id = 'u_' + Date.now();
                     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userData.id), userData);
                     await this.fetchAll();
+                    return true;
+                } catch (e) {
+                    console.error(e);
+                    await Dialog.alert('儲存失敗：權限不足或網路異常。');
+                    return false;
                 } finally {
                     hideLoading();
                 }
             },
 
             async deleteUser(id) {
-                if (!fbUser) return;
+                if (!fbUser) return false;
                 showLoading('處理中...');
                 try {
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', id));
                     await this.fetchAll();
+                    return true;
+                } catch (e) {
+                    console.error(e);
+                    await Dialog.alert('刪除失敗：權限不足或網路異常。');
+                    return false;
                 } finally {
                     hideLoading();
                 }
             },
 
             async saveCategory(name) {
-                if (!fbUser) return;
+                if (!fbUser) return false;
                 if (!state.categories.includes(name)) {
                     showLoading('處理中...');
                     try {
                         const catId = 'c_' + Date.now() + Math.floor(Math.random()*1000);
                         await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', catId), { name: name });
                         await this.fetchAll();
+                        return true;
+                    } catch (e) {
+                        console.error(e);
+                        await Dialog.alert('新增分類失敗：權限不足或網路異常。');
+                        return false;
                     } finally {
                         hideLoading();
                     }
                 }
+                return false;
             },
 
             async deleteCategory(name) {
-                if (!fbUser) return;
+                if (!fbUser) return false;
                 showLoading('處理中...');
                 try {
                     const catRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
@@ -604,7 +664,13 @@
                     if (docToDelete) {
                         await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', docToDelete.id));
                         await this.fetchAll();
+                        return true;
                     }
+                    return false;
+                } catch (e) {
+                    console.error(e);
+                    await Dialog.alert('刪除分類失敗：權限不足或網路異常。');
+                    return false;
                 } finally {
                     hideLoading();
                 }
@@ -619,6 +685,7 @@
             backToDashBtn: document.getElementById('back-to-dash-btn'),
             loginBtn: document.getElementById('login-btn'),
             logoutBtn: document.getElementById('logout-btn'),
+            changePwdBtn: document.getElementById('change-pwd-btn'),
             manageUsersBtn: document.getElementById('manage-users-btn'),
             userInfo: document.getElementById('user-info'),
             searchInput: document.getElementById('search-input'),
@@ -645,6 +712,10 @@
             usersTableBody: document.getElementById('users-table-body'),
             categoryForm: document.getElementById('category-form'),
             categoryList: document.getElementById('category-list'),
+            pwdModal: document.getElementById('pwd-modal'),
+            pwdForm: document.getElementById('pwd-form'),
+            closePwdModalBtn: document.getElementById('close-pwd-modal'),
+            cancelPwdModalBtn: document.getElementById('cancel-pwd-modal'),
             loadingOverlay: document.getElementById('loading-overlay'),
             loadingText: document.getElementById('loading-text')
         };
@@ -652,17 +723,25 @@
         // Firebase 授權登入後初始化
         window.addEventListener('DOMContentLoaded', async () => {
             try {
-                // 安全防護：無身分者賦予 Firebase 讀寫權限
-                await signInAnonymously(auth);
+                // 安全防護：使用自訂 Token 驗證以取得寫入權限，若無則降級為匿名
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
                 onAuthStateChanged(auth, (user) => {
                     fbUser = user;
-                    if (user) {
+                    if (user && !window.hasInitApp) {
+                        window.hasInitApp = true;
                         init();
                     }
                 });
             } catch (e) {
                 console.error("Firebase auth failed", e);
-                init(); // 若授權失敗也嘗試進入系統以防白畫面
+                if(!window.hasInitApp){
+                    window.hasInitApp = true;
+                    init(); // 若授權失敗也嘗試進入系統以防白畫面
+                }
             }
         });
 
@@ -863,12 +942,12 @@
                 let validUser = state.users.find(user => user.username === u && user.password === p);
                 
                 // 強制備用登入機制
-                if (!validUser && u === 'admin' && p === 'Chun6680') {
-                    validUser = { username: 'admin', role: 'admin' };
+                if (!validUser && u === 'admin' && p === '123') {
+                    validUser = { id: 'u_admin', username: 'admin', role: 'admin' };
                 }
 
                 if (validUser) { 
-                    sessionStorage.setItem('logged_user', JSON.stringify({ username: validUser.username, role: validUser.role }));
+                    sessionStorage.setItem('logged_user', JSON.stringify({ id: validUser.id, username: validUser.username, role: validUser.role }));
                     els.loginError.classList.add('hidden');
                     els.loginForm.reset();
                     checkLoginStatus();
@@ -922,6 +1001,48 @@
             els.closeModalBtn.addEventListener('click', closeModal);
             els.cancelModalBtn.addEventListener('click', closeModal);
 
+            els.changePwdBtn.addEventListener('click', () => {
+                els.pwdForm.reset();
+                els.pwdModal.classList.remove('hidden');
+            });
+            els.closePwdModalBtn.addEventListener('click', () => els.pwdModal.classList.add('hidden'));
+            els.cancelPwdModalBtn.addEventListener('click', () => els.pwdModal.classList.add('hidden'));
+
+            els.pwdForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const oldPwd = document.getElementById('pwd-old').value;
+                const newPwd = document.getElementById('pwd-new').value;
+                const confirmPwd = document.getElementById('pwd-confirm').value;
+
+                if (newPwd !== confirmPwd) {
+                    await Dialog.alert('新密碼與確認密碼不相符！');
+                    return;
+                }
+
+                const currentUser = JSON.parse(sessionStorage.getItem('logged_user'));
+                const userInDb = state.users.find(u => u.id === currentUser.id);
+
+                if (!userInDb || userInDb.password !== oldPwd) {
+                    await Dialog.alert('舊密碼錯誤！');
+                    return;
+                }
+
+                userInDb.password = newPwd;
+                const success = await DB.saveUser(userInDb);
+                
+                if (success) {
+                    await Dialog.alert('密碼變更成功！為了安全考量，請重新登入。');
+                    els.pwdForm.reset();
+                    els.pwdModal.classList.add('hidden');
+                    
+                    // 強制重新登入
+                    sessionStorage.removeItem('logged_user');
+                    checkLoginStatus();
+                    applyFiltersAndRender();
+                    showLogin();
+                }
+            });
+
             els.docForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const currentUser = JSON.parse(sessionStorage.getItem('logged_user'));
@@ -936,9 +1057,11 @@
                     author: originalDoc ? originalDoc.author : currentUser.username
                 };
                 
-                await DB.save(docData);
-                closeModal();
-                applyFiltersAndRender();
+                const success = await DB.save(docData);
+                if (success) {
+                    closeModal();
+                    applyFiltersAndRender();
+                }
             });
 
             els.manageUsersBtn.addEventListener('click', () => {
