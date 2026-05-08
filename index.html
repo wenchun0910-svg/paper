@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>網站文件管理系統</title>
+    <title>雲端文件管理系統</title>
+    <!-- 引入思源黑體與日系明朝體 (Shippori Mincho) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Shippori+Mincho:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -11,8 +15,18 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#2563eb',
-                        secondary: '#475569',
+                        primary: '#2b3a4a',    // 鐵紺 (Tetsukon / Navy)
+                        'primary-hover': '#1a242f',
+                        accent: '#b54454',     // 蘇芳 (Suou / Red)
+                        'accent-hover': '#8e3541',
+                        surface: '#f8f7f5',    // 和紙 (Washi White)
+                        paper: '#ffffff',      // 純白
+                        'zen-border': '#e2dfd8', // 枯淡 (Subtle Grey)
+                        'ink': '#333631',      // 墨 (Ink Black)
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                        serif: ['"Shippori Mincho"', 'serif'],
                     }
                 }
             }
@@ -21,37 +35,60 @@
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* 極簡日式焦點框 */
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2b3a4a !important;
+            box-shadow: 0 0 0 1px #2b3a4a !important;
+        }
+
+        /* 網底和紙點陣 (Subtle dot pattern) */
+        .washi-pattern {
+            background-color: #f8f7f5;
+            background-image: radial-gradient(#d5d3ce 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+<body class="washi-pattern text-ink font-sans antialiased selection:bg-primary selection:text-white">
 
     <!-- 1. 登入畫面 -->
-    <div id="login-view" class="min-h-screen flex items-center justify-center p-4 hidden">
-        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-100">
-            <div class="text-center mb-8">
-                <div class="bg-blue-100 text-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-cloud-arrow-up text-2xl"></i>
+    <div id="login-view" class="min-h-screen flex items-center justify-center p-4 hidden relative">
+        <div class="bg-paper p-12 rounded-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.08)] w-full max-w-md border border-zen-border relative">
+            
+            <div class="text-center mb-10 flex flex-col items-center">
+                <!-- 日式家徽/印章 Logo -->
+                <div class="mb-6 relative">
+                    <div class="w-12 h-12 border border-ink flex items-center justify-center transform rotate-45">
+                        <div class="w-10 h-10 border border-ink flex items-center justify-center transform -rotate-45 font-serif font-bold text-xl text-ink">庫</div>
+                    </div>
+                    <!-- 紅色判子 (Hanko) -->
+                    <div class="absolute -bottom-2 -right-3 w-6 h-6 border-2 border-accent text-accent rounded-sm flex items-center justify-center font-serif text-[10px] font-bold transform rotate-12 bg-white opacity-90">
+                        認
+                    </div>
                 </div>
-                <h1 class="text-2xl font-bold text-slate-800">網站文件管理系統</h1>
-                <p class="text-slate-500 mt-2">請登入以管理網站文件</p>
+                <h1 class="text-2xl font-serif font-bold text-ink tracking-widest mb-1">雲端文書庫</h1>
+                <p class="text-slate-400 text-xs font-sans tracking-widest mt-1">共用文件管理系統</p>
             </div>
             
-            <form id="login-form" class="space-y-5">
+            <form id="login-form" class="space-y-6">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">帳號</label>
-                    <input type="text" id="username" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="輸入帳號 (管理員: admin / 協作者: test)" required>
+                    <label class="block text-sm font-serif text-ink mb-2 tracking-wider">帳號</label>
+                    <input type="text" id="username" class="w-full px-4 py-3.5 rounded-sm border border-zen-border bg-[#fdfcfb] transition-colors font-sans text-sm" placeholder="請輸入帳號" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">密碼</label>
-                    <input type="password" id="password" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="輸入密碼 (預設: 123)" required>
+                    <label class="block text-sm font-serif text-ink mb-2 tracking-wider">密碼</label>
+                    <input type="password" id="password" class="w-full px-4 py-3.5 rounded-sm border border-zen-border bg-[#fdfcfb] transition-colors font-sans text-sm" placeholder="請輸入密碼" required>
                 </div>
-                <div id="login-error" class="text-red-500 text-sm hidden text-center">帳號或密碼錯誤</div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors shadow-md shadow-blue-500/30">
+                <div id="login-error" class="text-accent text-sm hidden text-center font-serif bg-[#fdf2f3] py-2.5 border border-[#f3d8dc] rounded-sm">認證失敗，請重新確認</div>
+                
+                <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white font-serif tracking-widest py-4 rounded-sm transition-all duration-300 mt-2 flex items-center justify-center gap-2">
                     登入系統
                 </button>
-                <div class="text-center mt-4">
-                    <button type="button" id="back-to-dash-btn" class="text-sm text-slate-500 hover:text-slate-700 transition-colors">
-                        <i class="fas fa-arrow-left mr-1"></i>以訪客身分返回瀏覽
+                <div class="text-center mt-6">
+                    <button type="button" id="back-to-dash-btn" class="text-xs text-slate-400 hover:text-primary transition-colors font-sans tracking-widest border-b border-transparent hover:border-primary pb-0.5">
+                        以訪客身分閱覽
                     </button>
                 </div>
             </form>
@@ -60,91 +97,108 @@
 
     <!-- 2. 系統主畫面 -->
     <div id="dashboard-view" class="min-h-screen flex flex-col hidden">
-        <header class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-30">
+        <!-- 導覽列 -->
+        <header class="bg-paper shadow-[0_2px_10px_rgba(0,0,0,0.02)] border-b border-zen-border sticky top-0 z-30">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-16">
-                    <div class="flex items-center gap-3">
-                        <i class="fas fa-cloud text-blue-600 text-xl"></i>
-                        <h1 class="text-xl font-bold text-slate-800">網站文件管理中心</h1>
-                    </div>
+                <div class="flex justify-between items-center h-[72px]">
                     <div class="flex items-center gap-4">
-                        <div id="user-info" class="hidden flex items-center gap-4">
-                            <span class="text-sm text-slate-500 hidden sm:block">目前登入：<span id="current-user-display" class="font-medium text-slate-700"></span> (<span id="current-role-display" class="text-blue-600"></span>)</span>
-                            <button id="manage-users-btn" class="hidden text-sm text-slate-600 hover:text-blue-600 font-medium transition-colors">
-                                <i class="fas fa-cogs mr-1"></i>系統設定
+                        <div class="w-8 h-8 border border-primary text-primary flex items-center justify-center font-serif font-bold text-sm bg-surface">庫</div>
+                        <h1 class="text-xl font-serif font-bold text-primary tracking-widest">雲端文書庫</h1>
+                    </div>
+                    <div class="flex items-center gap-6">
+                        <div id="user-info" class="hidden flex items-center gap-6">
+                            <span class="text-sm text-slate-500 hidden sm:block font-sans">
+                                目前登入：<span id="current-user-display" class="font-bold text-ink"></span> 
+                                <span class="text-slate-400 text-[10px] ml-1 border border-zen-border px-1.5 py-0.5 rounded-sm bg-surface tracking-wider" id="current-role-display"></span>
+                            </span>
+                            <div class="h-4 w-px bg-zen-border hidden sm:block"></div>
+                            <button id="manage-users-btn" class="hidden text-sm text-ink hover:text-primary font-serif tracking-wider transition-colors">
+                                系統設定
                             </button>
-                            <button id="logout-btn" class="text-sm text-slate-600 hover:text-red-600 font-medium transition-colors">
-                                <i class="fas fa-sign-out-alt mr-1"></i>登出
+                            <button id="logout-btn" class="text-sm text-ink hover:text-accent font-serif tracking-wider transition-colors">
+                                登出
                             </button>
                         </div>
-                        <button id="login-btn" class="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
-                            <i class="fas fa-sign-in-alt mr-1"></i>管理登入
+                        <button id="login-btn" class="text-sm text-primary hover:text-white hover:bg-primary font-serif tracking-widest transition-all border border-primary px-5 py-2 rounded-sm">
+                            管理員登入
                         </button>
                     </div>
                 </div>
             </div>
         </header>
 
-        <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+        <!-- 主要內容區 -->
+        <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10">
+            <!-- 控制工具列 -->
+            <div class="bg-paper p-5 rounded-sm shadow-sm border border-zen-border mb-6 flex flex-col md:flex-row gap-5 justify-between items-center">
                 <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                    <div class="relative w-full sm:w-64">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-slate-400"></i>
+                    <!-- 搜尋框 -->
+                    <div class="relative w-full sm:w-72">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-slate-300"></i>
                         </div>
-                        <input type="text" id="search-input" class="pl-10 w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="搜尋文件名稱或關鍵字...">
+                        <input type="text" id="search-input" class="pl-11 w-full px-4 py-2.5 rounded-sm border border-zen-border bg-surface text-sm transition-all font-sans placeholder:text-slate-400 focus:bg-white" placeholder="搜尋文件名稱或關鍵字...">
                     </div>
-                    <div class="relative w-full sm:w-48">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-folder text-slate-400"></i>
+                    <!-- 分類下拉 -->
+                    <div class="relative w-full sm:w-56">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fas fa-layer-group text-slate-300"></i>
                         </div>
-                        <select id="category-filter" class="pl-10 w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm appearance-none bg-white">
-                            <option value="全部">所有分類網站文件</option>
+                        <select id="category-filter" class="pl-11 w-full px-4 py-2.5 rounded-sm border border-zen-border bg-surface text-sm appearance-none transition-all cursor-pointer font-sans focus:bg-white">
+                            <option value="全部">所有分類文件</option>
                         </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i class="fas fa-chevron-down text-slate-400 text-xs"></i>
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                            <i class="fas fa-chevron-down text-slate-300 text-xs"></i>
                         </div>
                     </div>
                 </div>
-                <button id="add-doc-btn" class="hidden w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center justify-center gap-2">
-                    <i class="fas fa-plus"></i> 新增網站文件
+                <!-- 新增按鈕 -->
+                <button id="add-doc-btn" class="hidden w-full md:w-auto bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-sm text-sm font-serif tracking-widest transition-all shadow-sm flex items-center justify-center gap-2">
+                    <i class="fas fa-plus text-xs opacity-70"></i> 新增文件
                 </button>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <!-- 資料表格 -->
+            <div class="bg-paper rounded-sm shadow-sm border border-zen-border overflow-hidden">
                 <div class="overflow-x-auto no-scrollbar">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">
-                                <th class="px-6 py-4 font-medium">網站文件名稱</th>
-                                <th class="px-6 py-4 font-medium w-28">分類</th>
-                                <th class="px-6 py-4 font-medium w-28">建立者</th>
-                                <th class="px-6 py-4 font-medium w-24 text-center">觀看</th>
-                                <th class="px-6 py-4 font-medium w-36">更新日期</th>
-                                <th id="action-header" class="px-6 py-4 font-medium w-28 text-center hidden">操作</th>
+                            <tr class="bg-surface border-b border-zen-border text-ink font-serif text-sm">
+                                <th class="px-6 py-4 font-semibold tracking-wider">文件名稱</th>
+                                <th class="px-6 py-4 font-semibold tracking-wider w-32">分類</th>
+                                <th class="px-6 py-4 font-semibold tracking-wider w-32">建立者</th>
+                                <th class="px-6 py-4 font-semibold tracking-wider w-24 text-center">觀看次數</th>
+                                <th class="px-6 py-4 font-semibold tracking-wider w-40">更新日期</th>
+                                <th id="action-header" class="px-6 py-4 font-semibold tracking-wider w-28 text-center hidden">操作</th>
                             </tr>
                         </thead>
-                        <tbody id="table-body" class="divide-y divide-slate-100">
+                        <tbody id="table-body" class="divide-y divide-zen-border">
+                            <!-- 資料動態產生 -->
                         </tbody>
                     </table>
                 </div>
                 
-                <div id="empty-state" class="hidden py-12 text-center">
-                    <div class="text-slate-300 mb-3"><i class="fas fa-folder-open text-4xl"></i></div>
-                    <p class="text-slate-500">沒有找到符合的網站文件</p>
+                <!-- 空狀態提示 -->
+                <div id="empty-state" class="hidden py-20 text-center bg-paper">
+                    <div class="text-zen-border mb-4"><i class="fas fa-folder-open text-5xl"></i></div>
+                    <p class="text-slate-500 font-serif text-lg tracking-widest mb-1">查無相符的文件</p>
+                    <p class="text-slate-400 font-sans text-xs">請嘗試更換關鍵字或分類篩選</p>
                 </div>
 
-                <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex items-center justify-between">
-                    <p class="text-sm text-slate-500">
-                        顯示 <span id="page-start" class="font-medium text-slate-700">0</span> 到 <span id="page-end" class="font-medium text-slate-700">0</span> 筆，共 <span id="total-count" class="font-medium text-slate-700">0</span> 筆
+                <!-- 分頁控制 -->
+                <div class="bg-surface px-6 py-4 border-t border-zen-border flex items-center justify-between">
+                    <p class="text-xs text-slate-500 font-sans tracking-wide">
+                        顯示第 <span id="page-start" class="font-bold text-ink">0</span> 至 <span id="page-end" class="font-bold text-ink">0</span> 筆，共 <span id="total-count" class="font-bold text-ink">0</span> 筆文件
                     </p>
                     <div class="flex gap-2">
-                        <button id="prev-page" class="px-3 py-1 border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-slate-600">
-                            <i class="fas fa-chevron-left text-xs"></i>
+                        <button id="prev-page" class="w-8 h-8 flex items-center justify-center border border-zen-border rounded-sm hover:border-primary hover:text-primary disabled:opacity-30 disabled:hover:border-zen-border disabled:cursor-not-allowed transition-all text-slate-500 bg-white shadow-sm">
+                            <i class="fas fa-angle-left text-sm"></i>
                         </button>
-                        <span id="page-info" class="px-3 py-1 text-sm font-medium text-slate-700 flex items-center">1 / 1</span>
-                        <button id="next-page" class="px-3 py-1 border border-slate-300 rounded hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-slate-600">
-                            <i class="fas fa-chevron-right text-xs"></i>
+                        <span id="page-info" class="px-4 h-8 flex items-center text-xs font-sans text-ink bg-white border border-zen-border rounded-sm shadow-sm">
+                            1 / 1
+                        </span>
+                        <button id="next-page" class="w-8 h-8 flex items-center justify-center border border-zen-border rounded-sm hover:border-primary hover:text-primary disabled:opacity-30 disabled:hover:border-zen-border disabled:cursor-not-allowed transition-all text-slate-500 bg-white shadow-sm">
+                            <i class="fas fa-angle-right text-sm"></i>
                         </button>
                     </div>
                 </div>
@@ -153,33 +207,34 @@
     </div>
 
     <!-- 3. 新增/編輯文件 Modal -->
-    <div id="doc-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
-            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <h3 id="modal-title" class="text-lg font-bold text-slate-800">新增網站文件</h3>
-                <button id="close-modal" class="text-slate-400 hover:text-slate-600 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
+    <div id="doc-modal" class="fixed inset-0 bg-ink/30 backdrop-blur-[2px] hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-paper rounded-sm shadow-2xl w-full max-w-lg border border-zen-border overflow-hidden transform transition-all">
+            <div class="px-8 py-6 border-b border-zen-border flex justify-between items-center bg-surface relative">
+                <h3 id="modal-title" class="text-lg font-serif font-bold text-ink tracking-widest">新增文件</h3>
+                <button id="close-modal" class="text-slate-400 hover:text-primary transition-colors">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="doc-form" class="p-6 space-y-4">
+            <form id="doc-form" class="p-8 space-y-6">
                 <input type="hidden" id="doc-id">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">網站文件名稱 <span class="text-red-500">*</span></label>
-                    <input type="text" id="doc-title" required class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-sm font-serif text-ink mb-2 tracking-wider">文件名稱 <span class="text-accent ml-1">*</span></label>
+                    <input type="text" id="doc-title" required class="w-full px-4 py-3 rounded-sm border border-zen-border bg-surface focus:bg-white transition-colors text-ink font-sans text-sm">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">網站文件分類 <span class="text-red-500">*</span></label>
-                    <select id="doc-category" required class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white">
+                    <label class="block text-sm font-serif text-ink mb-2 tracking-wider">分類 <span class="text-accent ml-1">*</span></label>
+                    <select id="doc-category" required class="w-full px-4 py-3 rounded-sm border border-zen-border bg-surface focus:bg-white transition-colors appearance-none cursor-pointer text-ink font-sans text-sm">
+                        <!-- 選項動態產生 -->
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">網站文件連結 (URL) <span class="text-red-500">*</span></label>
-                    <input type="url" id="doc-link" required class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="https://drive.google.com/...">
+                    <label class="block text-sm font-serif text-ink mb-2 tracking-wider">存取連結 (URL) <span class="text-accent ml-1">*</span></label>
+                    <input type="url" id="doc-link" required class="w-full px-4 py-3 rounded-sm border border-zen-border bg-surface focus:bg-white transition-colors text-ink font-sans text-sm" placeholder="https://...">
                 </div>
-                <div class="pt-4 flex justify-end gap-3">
-                    <button type="button" id="cancel-modal" class="px-5 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors">取消</button>
-                    <button type="submit" class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors flex items-center gap-2">
-                        <i class="fas fa-save"></i> 儲存
+                <div class="pt-6 flex justify-end gap-3 border-t border-zen-border mt-8">
+                    <button type="button" id="cancel-modal" class="px-6 py-2.5 rounded-sm border border-zen-border text-slate-500 hover:text-ink font-serif tracking-widest transition-all bg-surface hover:bg-white">取消</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-sm bg-primary hover:bg-primary-hover text-white font-serif tracking-widest transition-all shadow-sm">
+                        儲存文件
                     </button>
                 </div>
             </form>
@@ -187,70 +242,76 @@
     </div>
 
     <!-- 4. 系統設定 (帳號與分類管理) Modal -->
-    <div id="settings-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <h3 class="text-lg font-bold text-slate-800"><i class="fas fa-cogs text-blue-600 mr-2"></i>系統設定</h3>
-                <button id="close-settings-modal" class="text-slate-400 hover:text-slate-600 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
+    <div id="settings-modal" class="fixed inset-0 bg-ink/30 backdrop-blur-[2px] hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-paper rounded-sm shadow-2xl w-full max-w-3xl border border-zen-border overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+            <div class="px-8 py-6 border-b border-zen-border flex justify-between items-center bg-surface relative">
+                <h3 class="text-lg font-serif font-bold text-ink tracking-widest"><i class="fas fa-sliders-h text-primary mr-3 opacity-80"></i>系統設定</h3>
+                <button id="close-settings-modal" class="text-slate-400 hover:text-primary transition-colors">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
             
-            <div class="p-6 overflow-y-auto flex-1">
-                <div class="mb-8">
-                    <h4 class="text-md font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2"><i class="fas fa-users-cog mr-2 text-slate-400"></i>帳號管理</h4>
-                    <form id="user-form" class="mb-4 bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-wrap gap-4 items-end">
+            <div class="p-8 overflow-y-auto flex-1 bg-paper">
+                <!-- 帳號管理區塊 -->
+                <div class="mb-12">
+                    <h4 class="text-base font-serif font-bold text-ink mb-4 border-b border-zen-border pb-2 tracking-widest flex items-center"><span class="w-1.5 h-4 bg-primary mr-2"></span> 使用者管理</h4>
+                    
+                    <form id="user-form" class="mb-6 flex flex-wrap gap-4 items-end bg-surface p-5 border border-zen-border rounded-sm">
                         <div class="flex-1 min-w-[150px]">
-                            <label class="block text-xs font-medium text-slate-500 mb-1">帳號名稱</label>
-                            <input type="text" id="new-username" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                            <label class="block text-xs font-sans text-slate-500 mb-1.5 tracking-wider">帳號</label>
+                            <input type="text" id="new-username" required class="w-full px-3 py-2.5 rounded-sm border border-zen-border bg-white text-sm font-sans focus:bg-surface transition-colors">
                         </div>
                         <div class="flex-1 min-w-[150px]">
-                            <label class="block text-xs font-medium text-slate-500 mb-1">密碼</label>
-                            <input type="text" id="new-password" required class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                            <label class="block text-xs font-sans text-slate-500 mb-1.5 tracking-wider">密碼</label>
+                            <input type="text" id="new-password" required class="w-full px-3 py-2.5 rounded-sm border border-zen-border bg-white text-sm font-sans focus:bg-surface transition-colors">
                         </div>
-                        <div class="w-32">
-                            <label class="block text-xs font-medium text-slate-500 mb-1">權限角色</label>
-                            <select id="new-role" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm bg-white">
-                                <option value="collaborator">協作者</option>
+                        <div class="w-36">
+                            <label class="block text-xs font-sans text-slate-500 mb-1.5 tracking-wider">權限</label>
+                            <select id="new-role" class="w-full px-3 py-2.5 rounded-sm border border-zen-border bg-white text-sm font-sans focus:bg-surface transition-colors appearance-none">
+                                <option value="collaborator">協作者 (一般)</option>
                                 <option value="admin">管理員</option>
                             </select>
                         </div>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors h-[38px]">
-                            新增帳號
+                        <button type="submit" class="bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-sm text-sm font-serif tracking-widest transition-colors shadow-sm h-[42px]">
+                            新增
                         </button>
                     </form>
 
-                    <div class="border border-slate-200 rounded-lg overflow-hidden">
+                    <div class="border border-zen-border rounded-sm overflow-hidden bg-white">
                         <table class="w-full text-left border-collapse">
-                            <thead class="bg-slate-50 text-slate-500 text-sm border-b border-slate-200">
+                            <thead class="bg-surface text-ink font-sans text-xs border-b border-zen-border">
                                 <tr>
-                                    <th class="px-4 py-3 font-medium">帳號</th>
-                                    <th class="px-4 py-3 font-medium">密碼</th>
-                                    <th class="px-4 py-3 font-medium">身分權限</th>
-                                    <th class="px-4 py-3 font-medium text-center w-24">操作</th>
+                                    <th class="px-5 py-3 font-semibold tracking-wider">帳號</th>
+                                    <th class="px-5 py-3 font-semibold tracking-wider">密碼</th>
+                                    <th class="px-5 py-3 font-semibold tracking-wider">權限</th>
+                                    <th class="px-5 py-3 font-semibold text-center w-24 tracking-wider">刪除</th>
                                 </tr>
                             </thead>
-                            <tbody id="users-table-body" class="divide-y divide-slate-100 text-sm">
+                            <tbody id="users-table-body" class="divide-y divide-zen-border text-sm">
+                                <!-- JS 動態產生 -->
                             </tbody>
                         </table>
                     </div>
                 </div>
 
+                <!-- 分類管理區塊 -->
                 <div>
-                    <h4 class="text-md font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2"><i class="fas fa-tags mr-2 text-slate-400"></i>文件分類管理</h4>
-                    <form id="category-form" class="mb-4 bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-wrap gap-4 items-end">
+                    <h4 class="text-base font-serif font-bold text-ink mb-4 border-b border-zen-border pb-2 tracking-widest flex items-center"><span class="w-1.5 h-4 bg-primary mr-2"></span> 分類管理</h4>
+                    
+                    <form id="category-form" class="mb-5 flex flex-wrap gap-4 items-end">
                         <div class="flex-1">
-                            <label class="block text-xs font-medium text-slate-500 mb-1">新增自訂分類</label>
-                            <input type="text" id="new-category-name" required placeholder="例如：年度報表" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 text-sm">
+                            <label class="block text-xs font-sans text-slate-500 mb-1.5 tracking-wider">新增分類名稱</label>
+                            <input type="text" id="new-category-name" required placeholder="例如：企劃書" class="w-full px-4 py-2.5 rounded-sm border border-zen-border bg-surface text-sm font-sans focus:bg-white transition-colors">
                         </div>
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors h-[38px] whitespace-nowrap">
+                        <button type="submit" class="bg-surface border border-zen-border hover:border-primary text-ink hover:text-primary px-6 py-2.5 rounded-sm text-sm font-serif tracking-widest transition-colors h-[42px] whitespace-nowrap">
                             新增分類
                         </button>
                     </form>
                     
-                    <div class="bg-white border border-slate-200 rounded-xl p-4">
-                        <p class="text-xs text-slate-500 mb-3">目前的分類清單：</p>
-                        <div id="category-list" class="flex flex-wrap gap-2">
+                    <div class="bg-surface border border-zen-border rounded-sm p-6 mt-4">
+                        <p class="text-xs font-sans text-slate-400 mb-4 tracking-wider">目前的分類清單：</p>
+                        <div id="category-list" class="flex flex-wrap gap-3">
+                            <!-- JS 動態產生 -->
                         </div>
                     </div>
                 </div>
@@ -259,30 +320,32 @@
     </div>
 
     <!-- 5. 系統提示/確認對話框 Modal -->
-    <div id="dialog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-[80] flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all text-center p-6">
-            <div id="dialog-icon-container" class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i id="dialog-icon" class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+    <div id="dialog-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-[2px] hidden z-[80] flex items-center justify-center p-4">
+        <div class="bg-paper rounded-sm shadow-2xl w-full max-w-sm border border-zen-border overflow-hidden transform transition-all text-center p-10">
+            <!-- 紅色判子風格的警告圖示 -->
+            <div id="dialog-icon-container" class="w-14 h-14 border-2 rounded-sm flex items-center justify-center mx-auto mb-6 bg-white transform rotate-3">
+                <i id="dialog-icon" class="fas fa-exclamation-triangle text-xl"></i>
             </div>
-            <h3 id="dialog-title" class="text-lg font-bold text-slate-800 mb-2">提示</h3>
-            <p id="dialog-message" class="text-slate-500 mb-6">訊息內容</p>
+            <h3 id="dialog-title" class="text-lg font-serif font-bold text-ink mb-3 tracking-widest">系統提示</h3>
+            <p id="dialog-message" class="text-slate-600 text-sm mb-8 leading-relaxed font-sans">訊息內容</p>
             <div class="flex justify-center gap-3">
-                <button id="dialog-cancel-btn" class="px-5 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors w-full hidden">取消</button>
-                <button id="dialog-confirm-btn" class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors w-full">確定</button>
+                <button id="dialog-cancel-btn" class="px-6 py-2.5 rounded-sm border border-zen-border text-slate-500 hover:text-ink font-serif tracking-widest transition-colors w-full hidden bg-surface hover:bg-white">取消</button>
+                <button id="dialog-confirm-btn" class="px-6 py-2.5 rounded-sm text-white font-serif tracking-widest transition-colors w-full shadow-sm">確定</button>
             </div>
         </div>
     </div>
 
     <!-- 6. 載入中遮罩 -->
-    <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm hidden z-[60] flex flex-col items-center justify-center">
-        <i class="fas fa-circle-notch fa-spin text-4xl text-blue-600 mb-4"></i>
-        <p class="text-slate-600 font-medium" id="loading-text">資料同步中...</p>
+    <div id="loading-overlay" class="fixed inset-0 bg-paper/90 backdrop-blur-sm hidden z-[90] flex flex-col items-center justify-center">
+        <!-- 和風花草旋轉 loading -->
+        <i class="fas fa-fan fa-spin text-4xl text-primary mb-6 opacity-80"></i>
+        <p class="text-ink font-serif tracking-widest font-bold text-sm" id="loading-text">資料同步中...</p>
     </div>
 
     <!-- 7. Javascript 邏輯區 -->
     <script>
         const CONFIG = {
-            USE_GOOGLE_SHEETS: true, 
+            USE_GOOGLE_SHEETS: false, 
             GAS_URL: 'https://script.google.com/macros/s/AKfycbzx8VFrA_8KTGwFtujlLIPjMMEPn33sIV3Llgmd8gOhEy7LT6VqvipC1ziVWMWLCxCU-g/exec',
             ITEMS_PER_PAGE: 10
         };
@@ -298,27 +361,25 @@
             isLoading: false
         };
 
-        // 僅保留一組預設管理員帳號供初始登入
         const defaultUsers = [
             { id: 'u_admin', username: 'admin', password: '123', role: 'admin' }
         ];
 
-        // 預設基本分類
-        const defaultCategories = ['行政', '財務', '專案', '技術', '其他'];
-
-        // 初始文件為空陣列，移除測試資料
+        const defaultCategories = ['總務', '財務', '企劃', '技術', '其他'];
         const defaultData = [];
 
+        // 日式傳統色標籤 (Nippon Colors)
         const colorClasses = [
-            'bg-purple-100 text-purple-700', 'bg-green-100 text-green-700', 
-            'bg-blue-100 text-blue-700', 'bg-orange-100 text-orange-700', 
-            'bg-teal-100 text-teal-700', 'bg-pink-100 text-pink-700', 
-            'bg-indigo-100 text-indigo-700', 'bg-rose-100 text-rose-700',
-            'bg-cyan-100 text-cyan-700', 'bg-amber-100 text-amber-700'
+            'bg-[#f7ecee] text-[#b54454] border border-[#e8d3d7]', // 櫻 Sakura / 蘇芳
+            'bg-[#e9eee6] text-[#4f664b] border border-[#d2dcd0]', // 抹茶 Matcha / 松葉
+            'bg-[#e6ebf0] text-[#2b3a4a] border border-[#caced6]', // 空 Sora / 鐵紺
+            'bg-[#f0eaf4] text-[#6b4c8a] border border-[#d9ccdf]', // 藤 Fuji
+            'bg-[#f3eedb] text-[#8a7238] border border-[#e0d6b8]', // 芥子 Karashi
+            'bg-[#eae8e6] text-[#55585b] border border-[#cfccca]'  // 鈍色 Nibiiro
         ];
 
         const getColorClass = (str) => {
-            if (!str) return 'bg-gray-100 text-gray-700';
+            if (!str) return 'bg-[#f8f7f5] text-slate-500 border border-zen-border';
             let hash = 0;
             for (let i = 0; i < str.length; i++) {
                 hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -326,42 +387,36 @@
             return colorClasses[Math.abs(hash) % colorClasses.length];
         };
 
-        // 根據網址自動辨識並回傳對應的圖示與顏色
         const getIconInfo = (url) => {
             try {
                 const urlObj = new URL(url);
                 const hostname = urlObj.hostname.toLowerCase();
 
                 if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
-                    return { class: 'fab fa-youtube', color: 'text-red-500', hover: 'group-hover:text-red-600' };
+                    return { class: 'fab fa-youtube', color: 'text-[#b54454]', hover: 'group-hover:text-red-800' };
                 }
                 if (hostname.includes('drive.google.com') || hostname.includes('docs.google.com')) {
-                    return { class: 'fab fa-google-drive', color: 'text-green-600', hover: 'group-hover:text-green-700' };
+                    return { class: 'fab fa-google-drive', color: 'text-[#2b3a4a]', hover: 'group-hover:text-ink' };
                 }
                 if (hostname.includes('github.com')) {
-                    return { class: 'fab fa-github', color: 'text-slate-800', hover: 'group-hover:text-black' };
+                    return { class: 'fab fa-github', color: 'text-[#333631]', hover: 'group-hover:text-black' };
                 }
                 if (hostname.includes('dropbox.com')) {
-                    return { class: 'fab fa-dropbox', color: 'text-blue-600', hover: 'group-hover:text-blue-700' };
+                    return { class: 'fab fa-dropbox', color: 'text-[#4f664b]', hover: 'group-hover:text-black' };
                 }
                 if (hostname.includes('figma.com')) {
-                    return { class: 'fab fa-figma', color: 'text-purple-500', hover: 'group-hover:text-purple-600' };
+                    return { class: 'fab fa-figma', color: 'text-[#b54454]', hover: 'group-hover:text-[#8e3541]' };
                 }
                 if (hostname.includes('trello.com')) {
-                    return { class: 'fab fa-trello', color: 'text-blue-500', hover: 'group-hover:text-blue-600' };
+                    return { class: 'fab fa-trello', color: 'text-[#2b3a4a]', hover: 'group-hover:text-[#1a242f]' };
                 }
                 if (hostname.includes('notion.so') || hostname.includes('notion.site')) {
-                    return { class: 'fas fa-cube', color: 'text-slate-800', hover: 'group-hover:text-black' };
-                }
-                if (hostname.includes('slack.com')) {
-                    return { class: 'fab fa-slack', color: 'text-purple-600', hover: 'group-hover:text-purple-700' };
+                    return { class: 'fas fa-cube', color: 'text-ink', hover: 'group-hover:text-black' };
                 }
                 
-                // 預設的一般連結圖示
-                return { class: 'fas fa-link', color: 'text-slate-400', hover: 'group-hover:text-blue-500' };
+                return { class: 'fas fa-link', color: 'text-slate-400', hover: 'group-hover:text-primary' };
             } catch (e) {
-                // 若網址格式不正確，顯示一般文件圖示
-                return { class: 'fas fa-file-alt', color: 'text-slate-400', hover: 'group-hover:text-blue-500' };
+                return { class: 'fas fa-file-alt', color: 'text-slate-400', hover: 'group-hover:text-primary' };
             }
         };
 
@@ -381,14 +436,14 @@
 
                     if (isConfirm) {
                         cancelBtn.classList.remove('hidden');
-                        confirmBtn.className = 'px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition-colors w-full';
-                        iconContainer.className = 'w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4';
-                        icon.className = 'fas fa-exclamation-triangle text-2xl text-red-600';
+                        confirmBtn.className = 'px-6 py-2.5 rounded-sm bg-accent hover:bg-accent-hover text-white font-serif tracking-widest transition-colors w-full shadow-sm';
+                        iconContainer.className = 'w-14 h-14 border-2 border-[#e8d3d7] text-accent rounded-sm flex items-center justify-center mx-auto mb-6 bg-[#fcf5f6] transform rotate-3';
+                        icon.className = 'fas fa-exclamation-triangle text-xl text-accent';
                     } else {
                         cancelBtn.classList.add('hidden');
-                        confirmBtn.className = 'px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors w-full';
-                        iconContainer.className = 'w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4';
-                        icon.className = 'fas fa-info-circle text-2xl text-blue-600';
+                        confirmBtn.className = 'px-6 py-2.5 rounded-sm bg-primary hover:bg-primary-hover text-white font-serif tracking-widest transition-colors w-full shadow-sm';
+                        iconContainer.className = 'w-14 h-14 border-2 border-zen-border text-primary rounded-sm flex items-center justify-center mx-auto mb-6 bg-surface';
+                        icon.className = 'fas fa-info text-xl text-primary';
                     }
 
                     modal.classList.remove('hidden');
@@ -407,13 +462,12 @@
                 });
             },
             alert(message) { return this.show('系統提示', message, false); },
-            confirm(message) { return this.show('確認動作', message, true); }
+            confirm(message) { return this.show('請確認', message, true); }
         };
 
-        // 全新的 DB API，支援從 Google Sheets 拉取/寫入 3 張資料表
         const DB = {
             async fetchAll() {
-                showLoading('讀取資料庫中...');
+                showLoading('讀取資料中...');
                 try {
                     if (CONFIG.USE_GOOGLE_SHEETS) {
                         const response = await fetch(`${CONFIG.GAS_URL}?action=read`);
@@ -424,9 +478,8 @@
                             state.categories = data.categories || [];
                         }
                     } else {
-                        await new Promise(r => setTimeout(r, 500));
+                        await new Promise(r => setTimeout(r, 600));
                         
-                        // 強化防呆機制：如果 LocalStorage 裡面是空的陣列，自動倒回預設值
                         let localUsers = JSON.parse(localStorage.getItem('cloud_users'));
                         if (!localUsers || localUsers.length === 0) localUsers = defaultUsers;
                         state.users = localUsers;
@@ -439,13 +492,12 @@
                         if (!localDocs) localDocs = defaultData;
                         state.documents = localDocs;
                         
-                        // 強制同步回 localStorage
                         localStorage.setItem('cloud_users', JSON.stringify(state.users));
                         localStorage.setItem('cloud_categories', JSON.stringify(state.categories));
                         localStorage.setItem('cloud_docs', JSON.stringify(state.documents));
                     }
                 } catch (error) {
-                    await Dialog.alert('資料讀取失敗！請檢查連線設定。');
+                    await Dialog.alert('讀取失敗，請確認網路連線。');
                     console.error(error);
                 } finally {
                     hideLoading();
@@ -453,7 +505,7 @@
             },
 
             async save(docData) {
-                showLoading('儲存文件中...');
+                showLoading('儲存中...');
                 try {
                     if (CONFIG.USE_GOOGLE_SHEETS) {
                         const action = docData.id ? 'updateDoc' : 'createDoc';
@@ -479,8 +531,8 @@
             },
 
             async delete(id) {
-                if (!(await Dialog.confirm('確定要刪除這份文件嗎？此動作無法復原。'))) return false;
-                showLoading('刪除資料中...');
+                if (!(await Dialog.confirm('確定要刪除這份文件嗎？\n※此動作無法復原。'))) return false;
+                showLoading('刪除中...');
                 try {
                     if (CONFIG.USE_GOOGLE_SHEETS) {
                         await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteDoc', id: id }) });
@@ -496,12 +548,10 @@
                 }
             },
 
-            // 觀看次數 + 1
             async incrementView(id) {
                 if (CONFIG.USE_GOOGLE_SHEETS) {
-                    // 非同步發送，不阻擋畫面
                     fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'incrementView', id: id }) })
-                        .catch(err => console.error("計數更新失敗", err));
+                        .catch(err => console.error("Update failed", err));
                 } else {
                     const index = state.documents.findIndex(d => d.id === id);
                     if (index > -1) {
@@ -513,7 +563,7 @@
 
             async saveUser(userData) {
                 if (CONFIG.USE_GOOGLE_SHEETS) {
-                    showLoading('新增帳號中...');
+                    showLoading('處理中...');
                     await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'createUser', data: userData }) });
                     await this.fetchAll();
                     hideLoading();
@@ -526,7 +576,7 @@
 
             async deleteUser(id) {
                 if (CONFIG.USE_GOOGLE_SHEETS) {
-                    showLoading('刪除帳號中...');
+                    showLoading('處理中...');
                     await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteUser', id: id }) });
                     await this.fetchAll();
                     hideLoading();
@@ -539,7 +589,7 @@
             async saveCategory(name) {
                 if (!state.categories.includes(name)) {
                     if (CONFIG.USE_GOOGLE_SHEETS) {
-                        showLoading('新增分類中...');
+                        showLoading('處理中...');
                         await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'createCategory', name: name }) });
                         await this.fetchAll();
                         hideLoading();
@@ -552,7 +602,7 @@
 
             async deleteCategory(name) {
                 if (CONFIG.USE_GOOGLE_SHEETS) {
-                    showLoading('刪除分類中...');
+                    showLoading('處理中...');
                     await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteCategory', name: name }) });
                     await this.fetchAll();
                     hideLoading();
@@ -612,7 +662,7 @@
             if (userStr) {
                 const user = JSON.parse(userStr);
                 document.getElementById('current-user-display').textContent = user.username;
-                document.getElementById('current-role-display').textContent = user.role === 'admin' ? '管理員' : '協作者';
+                document.getElementById('current-role-display').textContent = user.role === 'admin' ? '管理員' : '一般';
                 
                 els.userInfo.classList.remove('hidden');
                 els.loginBtn.classList.add('hidden');
@@ -696,18 +746,13 @@
             renderPagination(startIndex + 1, endIndex, totalItems, totalPages);
         }
 
-        // 點擊文件時觸發：開啟連結並增加計數
         window.openDocument = (id, link) => {
             window.open(link, '_blank');
-            
-            // 畫面計數即時 +1
             const doc = state.documents.find(d => d.id === id);
             if (doc) {
                 doc.views = (Number(doc.views) || 0) + 1;
                 applyFiltersAndRender();
             }
-            
-            // 背景呼叫資料庫 API
             DB.incrementView(id);
         };
 
@@ -728,9 +773,9 @@
 
             docs.forEach(doc => {
                 const colorClass = getColorClass(doc.category);
-                const iconInfo = getIconInfo(doc.link); // 取得動態圖示資訊
+                const iconInfo = getIconInfo(doc.link);
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-blue-50/50 transition-colors group';
+                tr.className = 'hover:bg-surface transition-colors group';
                 
                 let actionHtml = '';
                 if (currentUser) {
@@ -740,17 +785,17 @@
                     if (isAdmin || isOwner) {
                         actionHtml = `
                         <td class="px-6 py-4 text-center">
-                            <div class="flex items-center justify-center gap-3">
-                                <button onclick="editDocument('${doc.id}')" class="text-slate-400 hover:text-blue-600 transition-colors" title="編輯">
-                                    <i class="fas fa-edit"></i>
+                            <div class="flex items-center justify-center gap-4">
+                                <button onclick="editDocument('${doc.id}')" class="text-slate-300 hover:text-primary transition-colors" title="編輯">
+                                    <i class="fas fa-pen text-sm"></i>
                                 </button>
-                                <button onclick="deleteDocument('${doc.id}')" class="text-slate-400 hover:text-red-600 transition-colors" title="刪除">
-                                    <i class="fas fa-trash-alt"></i>
+                                <button onclick="deleteDocument('${doc.id}')" class="text-slate-300 hover:text-accent transition-colors" title="刪除">
+                                    <i class="fas fa-trash text-sm"></i>
                                 </button>
                             </div>
                         </td>`;
                     } else {
-                        actionHtml = `<td class="px-6 py-4 text-center text-slate-300 text-xs font-medium">無權限</td>`;
+                        actionHtml = `<td class="px-6 py-4 text-center text-slate-300 text-xs font-sans tracking-widest">—</td>`;
                     }
                 }
 
@@ -758,24 +803,24 @@
 
                 tr.innerHTML = `
                     <td class="px-6 py-4">
-                        <a href="#" onclick="openDocument('${doc.id}', '${doc.link}'); return false;" class="flex items-center gap-3 group-hover:text-blue-600 transition-colors">
+                        <a href="#" onclick="openDocument('${doc.id}', '${doc.link}'); return false;" class="flex items-center gap-3 group-hover:text-primary transition-colors">
                             <i class="${iconInfo.class} ${iconInfo.color} ${iconInfo.hover} text-lg w-5 text-center transition-colors"></i>
-                            <span class="font-medium text-slate-800 group-hover:text-blue-600 truncate max-w-xs md:max-w-md" title="${doc.title}">${doc.title}</span>
+                            <span class="font-bold text-ink group-hover:text-primary truncate max-w-xs md:max-w-md font-sans text-[15px]" title="${doc.title}">${doc.title}</span>
                         </a>
                     </td>
                     <td class="px-6 py-4">
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${colorClass}">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-[12px] font-bold ${colorClass} tracking-widest font-sans">
                             ${doc.category}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-sm text-slate-600">
-                        <i class="fas fa-user-circle mr-1 text-slate-400"></i>${doc.author || '未知'}
+                    <td class="px-6 py-4 text-sm text-slate-500 font-sans">
+                        <i class="fas fa-user-circle mr-1.5 opacity-50"></i>${doc.author || '未知'}
                     </td>
-                    <td class="px-6 py-4 text-sm text-slate-500 text-center font-medium">
-                        ${viewsCount > 0 ? `<span class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">${viewsCount}</span>` : `<span class="text-slate-300">0</span>`}
+                    <td class="px-6 py-4 text-sm text-slate-500 text-center font-sans">
+                        ${viewsCount > 0 ? `<span class="text-primary bg-surface border border-zen-border px-2 py-0.5 rounded-sm font-bold text-xs">${viewsCount}</span>` : `<span class="text-slate-300 text-xs">—</span>`}
                     </td>
-                    <td class="px-6 py-4 text-sm text-slate-500">
-                        ${doc.date}
+                    <td class="px-6 py-4 text-[13px] text-slate-400 font-sans tracking-wider">
+                        ${doc.date.replace(/-/g, '/')}
                     </td>
                     ${actionHtml}
                 `;
@@ -797,21 +842,18 @@
                 e.preventDefault();
                 if(state.users.length === 0) await DB.fetchAll();
                 
-                // 加入 .trim() 避免使用者不小心輸入空白字元導致登入失敗
                 const u = document.getElementById('username').value.trim();
                 const p = document.getElementById('password').value.trim();
                 let validUser = state.users.find(user => user.username === u && user.password === p);
                 
-                // --- 強制備用登入機制 (終極防呆)：確保 admin / 123 永遠可以登入 ---
+                // 強制備用登入機制 (防呆)
                 if (!validUser && u === 'admin' && p === '123') {
                     validUser = { username: 'admin', role: 'admin' };
-                    // 順便嘗試修復本地資料庫，覆蓋掉錯誤的暫存
                     if (!CONFIG.USE_GOOGLE_SHEETS) {
                         state.users = defaultUsers;
                         localStorage.setItem('cloud_users', JSON.stringify(state.users));
                     }
                 }
-                // -----------------------------------------------------------
 
                 if (validUser) { 
                     sessionStorage.setItem('logged_user', JSON.stringify({ username: validUser.username, role: validUser.role }));
@@ -903,7 +945,7 @@
                 const r = document.getElementById('new-role').value;
                 
                 if(state.users.some(user => user.username === u)) {
-                    await Dialog.alert('此帳號名稱已存在！');
+                    await Dialog.alert('此帳號已存在！');
                     return;
                 }
                 
@@ -917,7 +959,7 @@
                 const name = document.getElementById('new-category-name').value.trim();
                 
                 if(state.categories.includes(name)) {
-                    await Dialog.alert('此分類已經存在！');
+                    await Dialog.alert('此分類已存在！');
                     return;
                 }
                 
@@ -936,17 +978,17 @@
                 const isSelf = user.username === currentUser.username;
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td class="px-4 py-3 font-medium text-slate-800">${user.username}</td>
-                    <td class="px-4 py-3 text-slate-500">${user.password}</td>
-                    <td class="px-4 py-3">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${user.role === 'admin' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}">
-                            ${user.role === 'admin' ? '管理員' : '協作者'}
+                    <td class="px-5 py-3 font-bold text-ink">${user.username}</td>
+                    <td class="px-5 py-3 text-slate-400 font-sans text-xs">${user.password}</td>
+                    <td class="px-5 py-3">
+                        <span class="inline-flex items-center px-2 py-0.5 border border-zen-border rounded-sm text-xs font-sans tracking-widest ${user.role === 'admin' ? 'bg-surface text-primary font-bold' : 'bg-transparent text-slate-500'}">
+                            ${user.role === 'admin' ? '管理員' : '一般'}
                         </span>
                     </td>
-                    <td class="px-4 py-3 text-center">
-                        ${isSelf ? '<span class="text-xs text-slate-400 font-medium tracking-wide">目前登入</span>' : 
-                        `<button onclick="deleteSystemUser('${user.id}')" class="text-slate-400 hover:text-red-500 transition-colors" title="刪除帳號">
-                            <i class="fas fa-trash-alt"></i>
+                    <td class="px-5 py-3 text-center">
+                        ${isSelf ? '<span class="text-xs text-primary bg-surface px-2 py-1 rounded-sm font-sans tracking-widest">目前登入</span>' : 
+                        `<button onclick="deleteSystemUser('${user.id}')" class="text-slate-300 hover:text-accent transition-colors" title="刪除">
+                            <i class="fas fa-trash text-sm"></i>
                         </button>`}
                     </td>
                 `;
@@ -957,10 +999,10 @@
             state.categories.forEach(cat => {
                 const colorClass = getColorClass(cat);
                 els.categoryList.innerHTML += `
-                    <div class="flex items-center gap-2 ${colorClass} px-3 py-1.5 rounded-lg text-sm font-medium border border-white shadow-sm">
-                        <span>${cat}</span>
-                        <button onclick="deleteSystemCategory('${cat}')" class="opacity-70 hover:opacity-100 hover:text-red-600 transition-all ml-1">
-                            <i class="fas fa-times"></i>
+                    <div class="flex items-center gap-2 ${colorClass} px-3 py-1.5 rounded-sm text-[13px] font-sans shadow-sm transition-transform hover:-translate-y-0.5">
+                        <span class="tracking-widest font-bold">${cat}</span>
+                        <button onclick="deleteSystemCategory('${cat}')" class="opacity-50 hover:opacity-100 hover:text-accent transition-all ml-1.5">
+                            <i class="fas fa-times text-[10px]"></i>
                         </button>
                     </div>
                 `;
@@ -968,7 +1010,7 @@
         }
 
         window.deleteSystemUser = async (id) => {
-            if(await Dialog.confirm('確定要永久刪除此帳號嗎？')) {
+            if(await Dialog.confirm('確定要刪除此帳號嗎？')) {
                 await DB.deleteUser(id);
                 renderSettingsData();
             }
@@ -989,13 +1031,13 @@
         function openModal(doc = null) {
             els.docForm.reset();
             if (doc) {
-                els.modalTitle.textContent = '編輯文件';
+                els.modalTitle.innerHTML = '編輯文件';
                 document.getElementById('doc-id').value = doc.id;
                 document.getElementById('doc-title').value = doc.title;
                 document.getElementById('doc-category').value = doc.category;
                 document.getElementById('doc-link').value = doc.link;
             } else {
-                els.modalTitle.textContent = '新增文件';
+                els.modalTitle.innerHTML = '新增文件';
                 document.getElementById('doc-id').value = '';
                 if(state.categories.length > 0) els.docCategory.value = state.categories[0];
             }
