@@ -383,7 +383,7 @@
         import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === Firebase 初始化 ===
-      const firebaseConfig = {
+        const firebaseConfig = {
   apiKey: "AIzaSyDa0NveTZKEo5mODD3XhX_9bA_bPOtcPlQ",
   authDomain: "infor-aded2.firebaseapp.com",
   projectId: "infor-aded2",
@@ -720,12 +720,14 @@
         // Firebase 授權登入後初始化 (徹底解決權限時序問題)
         const initApp = async () => {
             try {
+                let userCred;
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
+                    userCred = await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
-                    await signInAnonymously(auth);
+                    userCred = await signInAnonymously(auth);
                 }
-                window.fbUser = auth.currentUser;
+                // 確保能立即抓到授權狀態
+                window.fbUser = userCred.user || auth.currentUser;
             } catch (e) {
                 console.error("Firebase auth failed", e);
                 window.fbUser = null;
