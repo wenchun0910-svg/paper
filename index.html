@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>網站管理系統</title>
+    <title>資訊分享平台</title>
     <!-- 引入思源黑體與日系明朝體 (Shippori Mincho) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,8 +68,8 @@
                         認
                     </div>
                 </div>
-                <h1 class="text-2xl font-serif font-bold text-ink tracking-widest mb-1">雲端網站庫</h1>
-                <p class="text-slate-400 text-xs font-sans tracking-widest mt-1">網站管理系統</p>
+                <h1 class="text-2xl font-serif font-bold text-ink tracking-widest mb-1">雲端資訊庫</h1>
+                <p class="text-slate-400 text-xs font-sans tracking-widest mt-1">共用資訊分享平台</p>
             </div>
             
             <form id="login-form" class="space-y-6">
@@ -103,7 +103,7 @@
                 <div class="flex justify-between items-center h-[72px]">
                     <div class="flex items-center gap-4">
                         <div class="w-8 h-8 border border-primary text-primary flex items-center justify-center font-serif font-bold text-sm bg-surface">庫</div>
-                        <h1 class="text-xl font-serif font-bold text-primary tracking-widest">雲端文書庫</h1>
+                        <h1 class="text-xl font-serif font-bold text-primary tracking-widest">雲端資訊庫</h1>
                     </div>
                     <div class="flex items-center gap-6">
                         <div id="user-info" class="hidden flex items-center gap-6">
@@ -137,7 +137,7 @@
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <i class="fas fa-search text-slate-300"></i>
                         </div>
-                        <input type="text" id="search-input" class="pl-11 w-full px-4 py-2.5 rounded-sm border border-zen-border bg-surface text-sm transition-all font-sans placeholder:text-slate-400 focus:bg-white" placeholder="搜尋文件名稱或關鍵字...">
+                        <input type="text" id="search-input" class="pl-11 w-full px-4 py-2.5 rounded-sm border border-zen-border bg-surface text-sm transition-all font-sans placeholder:text-slate-400 focus:bg-white" placeholder="搜尋標題或關鍵字...">
                     </div>
                     <!-- 分類下拉 -->
                     <div class="relative w-full sm:w-56">
@@ -145,7 +145,7 @@
                             <i class="fas fa-layer-group text-slate-300"></i>
                         </div>
                         <select id="category-filter" class="pl-11 w-full px-4 py-2.5 rounded-sm border border-zen-border bg-surface text-sm appearance-none transition-all cursor-pointer font-sans focus:bg-white">
-                            <option value="全部">所有網站</option>
+                            <option value="全部">所有分類</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                             <i class="fas fa-chevron-down text-slate-300 text-xs"></i>
@@ -154,7 +154,7 @@
                 </div>
                 <!-- 新增按鈕 -->
                 <button id="add-doc-btn" class="hidden w-full md:w-auto bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-sm text-sm font-serif tracking-widest transition-all shadow-sm flex items-center justify-center gap-2">
-                    <i class="fas fa-plus text-xs opacity-70"></i> 新增網站
+                    <i class="fas fa-plus text-xs opacity-70"></i> 分享資訊
                 </button>
             </div>
 
@@ -164,11 +164,11 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-surface border-b border-zen-border text-ink font-serif text-sm">
-                                <th class="px-6 py-4 font-semibold tracking-wider">網站名稱</th>
+                                <th class="px-6 py-4 font-semibold tracking-wider">標題</th>
                                 <th class="px-6 py-4 font-semibold tracking-wider w-32">分類</th>
-                                <th class="px-6 py-4 font-semibold tracking-wider w-32">建立者</th>
-                                <th class="px-6 py-4 font-semibold tracking-wider w-24 text-center">觀看次數</th>
-                                <th class="px-6 py-4 font-semibold tracking-wider w-40">更新日期</th>
+                                <th class="px-6 py-4 font-semibold tracking-wider w-32">分享者</th>
+                                <th class="px-6 py-4 font-semibold tracking-wider w-24 text-center">人氣</th>
+                                <th class="px-6 py-4 font-semibold tracking-wider w-40">發布日期</th>
                                 <th id="action-header" class="px-6 py-4 font-semibold tracking-wider w-28 text-center hidden">操作</th>
                             </tr>
                         </thead>
@@ -181,14 +181,14 @@
                 <!-- 空狀態提示 -->
                 <div id="empty-state" class="hidden py-20 text-center bg-paper">
                     <div class="text-zen-border mb-4"><i class="fas fa-folder-open text-5xl"></i></div>
-                    <p class="text-slate-500 font-serif text-lg tracking-widest mb-1">查無相符的網站</p>
+                    <p class="text-slate-500 font-serif text-lg tracking-widest mb-1">查無相符的資訊</p>
                     <p class="text-slate-400 font-sans text-xs">請嘗試更換關鍵字或分類篩選</p>
                 </div>
 
                 <!-- 分頁控制 -->
                 <div class="bg-surface px-6 py-4 border-t border-zen-border flex items-center justify-between">
                     <p class="text-xs text-slate-500 font-sans tracking-wide">
-                        顯示第 <span id="page-start" class="font-bold text-ink">0</span> 至 <span id="page-end" class="font-bold text-ink">0</span> 筆，共 <span id="total-count" class="font-bold text-ink">0</span> 筆文件
+                        顯示第 <span id="page-start" class="font-bold text-ink">0</span> 至 <span id="page-end" class="font-bold text-ink">0</span> 筆，共 <span id="total-count" class="font-bold text-ink">0</span> 筆資訊
                     </p>
                     <div class="flex gap-2">
                         <button id="prev-page" class="w-8 h-8 flex items-center justify-center border border-zen-border rounded-sm hover:border-primary hover:text-primary disabled:opacity-30 disabled:hover:border-zen-border disabled:cursor-not-allowed transition-all text-slate-500 bg-white shadow-sm">
@@ -206,11 +206,11 @@
         </main>
     </div>
 
-    <!-- 3. 新增/編輯網站 Modal -->
+    <!-- 3. 新增/編輯資訊 Modal -->
     <div id="doc-modal" class="fixed inset-0 bg-ink/30 backdrop-blur-[2px] hidden z-50 flex items-center justify-center p-4">
         <div class="bg-paper rounded-sm shadow-2xl w-full max-w-lg border border-zen-border overflow-hidden transform transition-all">
             <div class="px-8 py-6 border-b border-zen-border flex justify-between items-center bg-surface relative">
-                <h3 id="modal-title" class="text-lg font-serif font-bold text-ink tracking-widest">新增文件</h3>
+                <h3 id="modal-title" class="text-lg font-serif font-bold text-ink tracking-widest">新增資訊</h3>
                 <button id="close-modal" class="text-slate-400 hover:text-primary transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
@@ -218,7 +218,7 @@
             <form id="doc-form" class="p-8 space-y-6">
                 <input type="hidden" id="doc-id">
                 <div>
-                    <label class="block text-sm font-serif text-ink mb-2 tracking-wider">文件名稱 <span class="text-accent ml-1">*</span></label>
+                    <label class="block text-sm font-serif text-ink mb-2 tracking-wider">標題 <span class="text-accent ml-1">*</span></label>
                     <input type="text" id="doc-title" required class="w-full px-4 py-3 rounded-sm border border-zen-border bg-surface focus:bg-white transition-colors text-ink font-sans text-sm">
                 </div>
                 <div>
@@ -228,13 +228,13 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-serif text-ink mb-2 tracking-wider">存取連結 (URL) <span class="text-accent ml-1">*</span></label>
+                    <label class="block text-sm font-serif text-ink mb-2 tracking-wider">資訊連結 (URL) <span class="text-accent ml-1">*</span></label>
                     <input type="url" id="doc-link" required class="w-full px-4 py-3 rounded-sm border border-zen-border bg-surface focus:bg-white transition-colors text-ink font-sans text-sm" placeholder="https://...">
                 </div>
                 <div class="pt-6 flex justify-end gap-3 border-t border-zen-border mt-8">
                     <button type="button" id="cancel-modal" class="px-6 py-2.5 rounded-sm border border-zen-border text-slate-500 hover:text-ink font-serif tracking-widest transition-all bg-surface hover:bg-white">取消</button>
                     <button type="submit" class="px-6 py-2.5 rounded-sm bg-primary hover:bg-primary-hover text-white font-serif tracking-widest transition-all shadow-sm">
-                        儲存網站
+                        發布資訊
                     </button>
                 </div>
             </form>
@@ -300,11 +300,11 @@
                     
                     <form id="category-form" class="mb-5 flex flex-wrap gap-4 items-end">
                         <div class="flex-1">
-                            <label class="block text-xs font-sans text-slate-500 mb-1.5 tracking-wider">新增網站名稱</label>
-                            <input type="text" id="new-category-name" required placeholder="例如：企劃書" class="w-full px-4 py-2.5 rounded-sm border border-zen-border bg-surface text-sm font-sans focus:bg-white transition-colors">
+                            <label class="block text-xs font-sans text-slate-500 mb-1.5 tracking-wider">新增分類名稱</label>
+                            <input type="text" id="new-category-name" required placeholder="例如：生活、科技" class="w-full px-4 py-2.5 rounded-sm border border-zen-border bg-surface text-sm font-sans focus:bg-white transition-colors">
                         </div>
                         <button type="submit" class="bg-surface border border-zen-border hover:border-primary text-ink hover:text-primary px-6 py-2.5 rounded-sm text-sm font-serif tracking-widest transition-colors h-[42px] whitespace-nowrap">
-                            新增網站分類
+                            新增分類
                         </button>
                     </form>
                     
@@ -337,18 +337,32 @@
 
     <!-- 6. 載入中遮罩 -->
     <div id="loading-overlay" class="fixed inset-0 bg-paper/90 backdrop-blur-sm hidden z-[90] flex flex-col items-center justify-center">
-        <!-- 和風花草旋轉 loading -->
         <i class="fas fa-fan fa-spin text-4xl text-primary mb-6 opacity-80"></i>
         <p class="text-ink font-serif tracking-widest font-bold text-sm" id="loading-text">資料同步中...</p>
     </div>
 
-    <!-- 7. Javascript 邏輯區 -->
-    <script>
-        const CONFIG = {
-            USE_GOOGLE_SHEETS: true, 
-            GAS_URL: 'https://script.google.com/macros/s/AKfycbzx8VFrA_8KTGwFtujlLIPjMMEPn33sIV3Llgmd8gOhEy7LT6VqvipC1ziVWMWLCxCU-g/exec',
-            ITEMS_PER_PAGE: 10
-        };
+    <!-- 7. Javascript 邏輯區 (Firebase 模組化串接) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // === Firebase 初始化 ===
+        const firebaseConfig = {
+  apiKey: "AIzaSyDa0NveTZKEo5mODD3XhX_9bA_bPOtcPlQ",
+  authDomain: "infor-aded2.firebaseapp.com",
+  projectId: "infor-aded2",
+  storageBucket: "infor-aded2.firebasestorage.app",
+  messagingSenderId: "447138107771",
+  appId: "1:447138107771:web:399443bb0e13475d766dde"
+};
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        let fbUser = null;
+
+        const ITEMS_PER_PAGE = 10;
 
         let state = {
             documents: [],
@@ -364,11 +378,9 @@
         const defaultUsers = [
             { id: 'u_admin', username: 'admin', password: '123', role: 'admin' }
         ];
+        const defaultCategories = ['生活', '科技', '休閒', '學習', '其他'];
 
-        const defaultCategories = ['總務', '財務', '企劃', '技術', '其他'];
-        const defaultData = [];
-
-        // 日式傳統色標籤 (Nippon Colors)
+        // 日式傳統色標籤
         const colorClasses = [
             'bg-[#f7ecee] text-[#b54454] border border-[#e8d3d7]', // 櫻 Sakura / 蘇芳
             'bg-[#e9eee6] text-[#4f664b] border border-[#d2dcd0]', // 抹茶 Matcha / 松葉
@@ -465,37 +477,32 @@
             confirm(message) { return this.show('請確認', message, true); }
         };
 
+        // === Firebase 資料庫層 API ===
         const DB = {
             async fetchAll() {
+                if (!fbUser) return;
                 showLoading('讀取資料中...');
                 try {
-                    if (CONFIG.USE_GOOGLE_SHEETS) {
-                        const response = await fetch(`${CONFIG.GAS_URL}?action=read`);
-                        const data = await response.json();
-                        if(data.success) {
-                            state.documents = data.documents || [];
-                            state.users = data.users || [];
-                            state.categories = data.categories || [];
-                        }
-                    } else {
-                        await new Promise(r => setTimeout(r, 600));
-                        
-                        let localUsers = JSON.parse(localStorage.getItem('cloud_users'));
-                        if (!localUsers || localUsers.length === 0) localUsers = defaultUsers;
-                        state.users = localUsers;
+                    const articlesRef = collection(db, 'artifacts', appId, 'public', 'data', 'articles');
+                    const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'users');
+                    const categoriesRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
 
-                        let localCats = JSON.parse(localStorage.getItem('cloud_categories'));
-                        if (!localCats || localCats.length === 0) localCats = defaultCategories;
-                        state.categories = localCats;
+                    const [articlesSnap, usersSnap, catSnap] = await Promise.all([
+                        getDocs(articlesRef), getDocs(usersRef), getDocs(categoriesRef)
+                    ]);
 
-                        let localDocs = JSON.parse(localStorage.getItem('cloud_docs'));
-                        if (!localDocs) localDocs = defaultData;
-                        state.documents = localDocs;
-                        
-                        localStorage.setItem('cloud_users', JSON.stringify(state.users));
-                        localStorage.setItem('cloud_categories', JSON.stringify(state.categories));
-                        localStorage.setItem('cloud_docs', JSON.stringify(state.documents));
+                    state.documents = articlesSnap.docs.map(d => d.data());
+                    state.users = usersSnap.docs.map(d => d.data());
+                    state.categories = catSnap.docs.map(d => d.data().name);
+
+                    // 檢查預設值寫入
+                    if (state.users.length === 0) {
+                        for (const u of defaultUsers) await this.saveUser(u);
                     }
+                    if (state.categories.length === 0) {
+                        for (const c of defaultCategories) await this.saveCategory(c);
+                    }
+
                 } catch (error) {
                     await Dialog.alert('讀取失敗，請確認網路連線。');
                     console.error(error);
@@ -505,43 +512,34 @@
             },
 
             async save(docData) {
+                if (!fbUser) return;
                 showLoading('儲存中...');
                 try {
-                    if (CONFIG.USE_GOOGLE_SHEETS) {
-                        const action = docData.id ? 'updateDoc' : 'createDoc';
-                        await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: action, data: docData }) });
-                        await this.fetchAll();
+                    if (docData.id) {
+                        const original = state.documents.find(d => d.id === docData.id);
+                        docData.timestamp = Date.now();
+                        docData.date = new Date().toISOString().split('T')[0];
+                        docData.views = original ? original.views : 0;
                     } else {
-                        await new Promise(r => setTimeout(r, 400));
-                        if (docData.id) {
-                            const index = state.documents.findIndex(d => d.id === docData.id);
-                            if (index > -1) state.documents[index] = { ...state.documents[index], ...docData, timestamp: Date.now(), date: new Date().toISOString().split('T')[0] };
-                        } else {
-                            docData.id = 'doc_' + Date.now();
-                            docData.timestamp = Date.now();
-                            docData.date = new Date().toISOString().split('T')[0];
-                            docData.views = 0;
-                            state.documents.push(docData);
-                        }
-                        localStorage.setItem('cloud_docs', JSON.stringify(state.documents));
+                        docData.id = 'info_' + Date.now();
+                        docData.timestamp = Date.now();
+                        docData.date = new Date().toISOString().split('T')[0];
+                        docData.views = 0;
                     }
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'articles', docData.id), docData);
+                    await this.fetchAll();
                 } finally {
                     hideLoading();
                 }
             },
 
             async delete(id) {
-                if (!(await Dialog.confirm('確定要刪除這份文件嗎？\n※此動作無法復原。'))) return false;
+                if (!fbUser) return false;
+                if (!(await Dialog.confirm('確定要刪除這筆資訊嗎？\n※此動作無法復原。'))) return false;
                 showLoading('刪除中...');
                 try {
-                    if (CONFIG.USE_GOOGLE_SHEETS) {
-                        await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteDoc', id: id }) });
-                        await this.fetchAll();
-                    } else {
-                        await new Promise(r => setTimeout(r, 400));
-                        state.documents = state.documents.filter(d => d.id !== id);
-                        localStorage.setItem('cloud_docs', JSON.stringify(state.documents));
-                    }
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'articles', id));
+                    await this.fetchAll();
                     return true;
                 } finally {
                     hideLoading();
@@ -549,66 +547,66 @@
             },
 
             async incrementView(id) {
-                if (CONFIG.USE_GOOGLE_SHEETS) {
-                    fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'incrementView', id: id }) })
-                        .catch(err => console.error("Update failed", err));
-                } else {
-                    const index = state.documents.findIndex(d => d.id === id);
-                    if (index > -1) {
-                        state.documents[index].views = (Number(state.documents[index].views) || 0) + 1;
-                        localStorage.setItem('cloud_docs', JSON.stringify(state.documents));
-                    }
+                if (!fbUser) return;
+                const item = state.documents.find(d => d.id === id);
+                if (item) {
+                    item.views = (Number(item.views) || 0) + 1;
+                    // 在背景執行計數更新
+                    setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'articles', id), { views: item.views }, { merge: true })
+                        .catch(err => console.error("計數更新失敗", err));
                 }
             },
 
             async saveUser(userData) {
-                if (CONFIG.USE_GOOGLE_SHEETS) {
-                    showLoading('處理中...');
-                    await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'createUser', data: userData }) });
+                if (!fbUser) return;
+                showLoading('處理中...');
+                try {
+                    if (!userData.id) userData.id = 'u_' + Date.now();
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', userData.id), userData);
                     await this.fetchAll();
+                } finally {
                     hideLoading();
-                } else {
-                    userData.id = 'u_' + Date.now();
-                    state.users.push(userData);
-                    localStorage.setItem('cloud_users', JSON.stringify(state.users));
                 }
             },
 
             async deleteUser(id) {
-                if (CONFIG.USE_GOOGLE_SHEETS) {
-                    showLoading('處理中...');
-                    await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteUser', id: id }) });
+                if (!fbUser) return;
+                showLoading('處理中...');
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', id));
                     await this.fetchAll();
+                } finally {
                     hideLoading();
-                } else {
-                    state.users = state.users.filter(u => u.id !== id);
-                    localStorage.setItem('cloud_users', JSON.stringify(state.users));
                 }
             },
 
             async saveCategory(name) {
+                if (!fbUser) return;
                 if (!state.categories.includes(name)) {
-                    if (CONFIG.USE_GOOGLE_SHEETS) {
-                        showLoading('處理中...');
-                        await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'createCategory', name: name }) });
+                    showLoading('處理中...');
+                    try {
+                        const catId = 'c_' + Date.now() + Math.floor(Math.random()*1000);
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', catId), { name: name });
                         await this.fetchAll();
+                    } finally {
                         hideLoading();
-                    } else {
-                        state.categories.push(name);
-                        localStorage.setItem('cloud_categories', JSON.stringify(state.categories));
                     }
                 }
             },
 
             async deleteCategory(name) {
-                if (CONFIG.USE_GOOGLE_SHEETS) {
-                    showLoading('處理中...');
-                    await fetch(CONFIG.GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteCategory', name: name }) });
-                    await this.fetchAll();
+                if (!fbUser) return;
+                showLoading('處理中...');
+                try {
+                    const catRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
+                    const catSnap = await getDocs(catRef);
+                    const docToDelete = catSnap.docs.find(d => d.data().name === name);
+                    if (docToDelete) {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', docToDelete.id));
+                        await this.fetchAll();
+                    }
+                } finally {
                     hideLoading();
-                } else {
-                    state.categories = state.categories.filter(c => c !== name);
-                    localStorage.setItem('cloud_categories', JSON.stringify(state.categories));
                 }
             }
         };
@@ -650,6 +648,23 @@
             loadingOverlay: document.getElementById('loading-overlay'),
             loadingText: document.getElementById('loading-text')
         };
+
+        // Firebase 授權登入後初始化
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // 安全防護：無身分者賦予 Firebase 讀寫權限
+                await signInAnonymously(auth);
+                onAuthStateChanged(auth, (user) => {
+                    fbUser = user;
+                    if (user) {
+                        init();
+                    }
+                });
+            } catch (e) {
+                console.error("Firebase auth failed", e);
+                init(); // 若授權失敗也嘗試進入系統以防白畫面
+            }
+        });
 
         function init() {
             showDashboard();
@@ -702,7 +717,7 @@
             const currentFilter = els.categoryFilter.value;
             const currentDocCat = els.docCategory.value;
 
-            els.categoryFilter.innerHTML = '<option value="全部">所有分類文件</option>';
+            els.categoryFilter.innerHTML = '<option value="全部">所有分類</option>';
             els.docCategory.innerHTML = '';
 
             state.categories.forEach(cat => {
@@ -746,6 +761,7 @@
             renderPagination(startIndex + 1, endIndex, totalItems, totalPages);
         }
 
+        // 把由 HTML onclick 觸發的函數掛載到 window，使 module 中仍可讀取
         window.openDocument = (id, link) => {
             window.open(link, '_blank');
             const doc = state.documents.find(d => d.id === id);
@@ -846,13 +862,9 @@
                 const p = document.getElementById('password').value.trim();
                 let validUser = state.users.find(user => user.username === u && user.password === p);
                 
-                // 強制備用登入機制 (防呆)
+                // 強制備用登入機制
                 if (!validUser && u === 'admin' && p === '123') {
                     validUser = { username: 'admin', role: 'admin' };
-                    if (!CONFIG.USE_GOOGLE_SHEETS) {
-                        state.users = defaultUsers;
-                        localStorage.setItem('cloud_users', JSON.stringify(state.users));
-                    }
                 }
 
                 if (validUser) { 
@@ -1017,7 +1029,7 @@
         };
 
         window.deleteSystemCategory = async (name) => {
-            if(await Dialog.confirm(`確定要刪除分類「${name}」嗎？\n(注意：已標記此分類的文件不會被刪除，但下拉選單中將不再顯示此分類)`)) {
+            if(await Dialog.confirm(`確定要刪除分類「${name}」嗎？\n(注意：已標記此分類的資訊不會被刪除，但下拉選單中將不再顯示此分類)`)) {
                 await DB.deleteCategory(name);
                 renderSettingsData();
                 renderCategoryOptions();
@@ -1031,13 +1043,13 @@
         function openModal(doc = null) {
             els.docForm.reset();
             if (doc) {
-                els.modalTitle.innerHTML = '編輯文件';
+                els.modalTitle.innerHTML = '編輯資訊';
                 document.getElementById('doc-id').value = doc.id;
                 document.getElementById('doc-title').value = doc.title;
                 document.getElementById('doc-category').value = doc.category;
                 document.getElementById('doc-link').value = doc.link;
             } else {
-                els.modalTitle.innerHTML = '新增文件';
+                els.modalTitle.innerHTML = '分享資訊';
                 document.getElementById('doc-id').value = '';
                 if(state.categories.length > 0) els.docCategory.value = state.categories[0];
             }
@@ -1067,7 +1079,6 @@
             els.loadingOverlay.classList.add('hidden');
         }
 
-        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
