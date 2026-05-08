@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>雲端文件管理系統</title>
+    <title>網站管理系統</title>
     <!-- 引入思源黑體與日系明朝體 (Shippori Mincho) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,8 +68,8 @@
                         認
                     </div>
                 </div>
-                <h1 class="text-2xl font-serif font-bold text-ink tracking-widest mb-1">雲端文書庫</h1>
-                <p class="text-slate-400 text-xs font-sans tracking-widest mt-1">共用文件管理系統</p>
+                <h1 class="text-2xl font-serif font-bold text-ink tracking-widest mb-1">雲端網站庫</h1>
+                <p class="text-slate-400 text-xs font-sans tracking-widest mt-1">網站管理系統</p>
             </div>
             
             <form id="login-form" class="space-y-6">
@@ -145,7 +145,7 @@
                             <i class="fas fa-layer-group text-slate-300"></i>
                         </div>
                         <select id="category-filter" class="pl-11 w-full px-4 py-2.5 rounded-sm border border-zen-border bg-surface text-sm appearance-none transition-all cursor-pointer font-sans focus:bg-white">
-                            <option value="全部">所有分類文件</option>
+                            <option value="全部">所有網站</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                             <i class="fas fa-chevron-down text-slate-300 text-xs"></i>
@@ -154,7 +154,7 @@
                 </div>
                 <!-- 新增按鈕 -->
                 <button id="add-doc-btn" class="hidden w-full md:w-auto bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-sm text-sm font-serif tracking-widest transition-all shadow-sm flex items-center justify-center gap-2">
-                    <i class="fas fa-plus text-xs opacity-70"></i> 新增文件
+                    <i class="fas fa-plus text-xs opacity-70"></i> 新增網站
                 </button>
             </div>
 
@@ -164,7 +164,7 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-surface border-b border-zen-border text-ink font-serif text-sm">
-                                <th class="px-6 py-4 font-semibold tracking-wider">文件名稱</th>
+                                <th class="px-6 py-4 font-semibold tracking-wider">網站名稱</th>
                                 <th class="px-6 py-4 font-semibold tracking-wider w-32">分類</th>
                                 <th class="px-6 py-4 font-semibold tracking-wider w-32">建立者</th>
                                 <th class="px-6 py-4 font-semibold tracking-wider w-24 text-center">觀看次數</th>
@@ -181,7 +181,7 @@
                 <!-- 空狀態提示 -->
                 <div id="empty-state" class="hidden py-20 text-center bg-paper">
                     <div class="text-zen-border mb-4"><i class="fas fa-folder-open text-5xl"></i></div>
-                    <p class="text-slate-500 font-serif text-lg tracking-widest mb-1">查無相符的文件</p>
+                    <p class="text-slate-500 font-serif text-lg tracking-widest mb-1">查無相符的網站</p>
                     <p class="text-slate-400 font-sans text-xs">請嘗試更換關鍵字或分類篩選</p>
                 </div>
 
@@ -206,7 +206,7 @@
         </main>
     </div>
 
-    <!-- 3. 新增/編輯文件 Modal -->
+    <!-- 3. 新增/編輯網站 Modal -->
     <div id="doc-modal" class="fixed inset-0 bg-ink/30 backdrop-blur-[2px] hidden z-50 flex items-center justify-center p-4">
         <div class="bg-paper rounded-sm shadow-2xl w-full max-w-lg border border-zen-border overflow-hidden transform transition-all">
             <div class="px-8 py-6 border-b border-zen-border flex justify-between items-center bg-surface relative">
@@ -234,7 +234,7 @@
                 <div class="pt-6 flex justify-end gap-3 border-t border-zen-border mt-8">
                     <button type="button" id="cancel-modal" class="px-6 py-2.5 rounded-sm border border-zen-border text-slate-500 hover:text-ink font-serif tracking-widest transition-all bg-surface hover:bg-white">取消</button>
                     <button type="submit" class="px-6 py-2.5 rounded-sm bg-primary hover:bg-primary-hover text-white font-serif tracking-widest transition-all shadow-sm">
-                        儲存文件
+                        儲存網站
                     </button>
                 </div>
             </form>
@@ -300,11 +300,11 @@
                     
                     <form id="category-form" class="mb-5 flex flex-wrap gap-4 items-end">
                         <div class="flex-1">
-                            <label class="block text-xs font-sans text-slate-500 mb-1.5 tracking-wider">新增分類名稱</label>
+                            <label class="block text-xs font-sans text-slate-500 mb-1.5 tracking-wider">新增網站名稱</label>
                             <input type="text" id="new-category-name" required placeholder="例如：企劃書" class="w-full px-4 py-2.5 rounded-sm border border-zen-border bg-surface text-sm font-sans focus:bg-white transition-colors">
                         </div>
                         <button type="submit" class="bg-surface border border-zen-border hover:border-primary text-ink hover:text-primary px-6 py-2.5 rounded-sm text-sm font-serif tracking-widest transition-colors h-[42px] whitespace-nowrap">
-                            新增分類
+                            新增網站分類
                         </button>
                     </form>
                     
