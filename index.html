@@ -376,7 +376,7 @@
         };
 
         const defaultUsers = [
-            { id: 'u_admin', username: 'admin', password: '123', role: 'admin' }
+            { id: 'u_admin', username: 'admin', password: 'Chun6680', role: 'admin' }
         ];
         const defaultCategories = ['生活', '科技', '休閒', '學習', '其他'];
 
@@ -863,7 +863,7 @@
                 let validUser = state.users.find(user => user.username === u && user.password === p);
                 
                 // 強制備用登入機制
-                if (!validUser && u === 'admin' && p === '123') {
+                if (!validUser && u === 'admin' && p === 'Chun6680') {
                     validUser = { username: 'admin', role: 'admin' };
                 }
 
