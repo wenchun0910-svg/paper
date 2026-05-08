@@ -232,7 +232,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-serif text-ink mb-2 tracking-wider">資訊連結 (URL) <span class="text-accent ml-1">*</span></label>
-                    <input type="url" id="doc-link" required class="w-full px-4 py-3 rounded-sm border border-zen-border bg-surface focus:bg-white transition-colors text-ink font-sans text-sm" placeholder="https://...">
+                    <input type="text" id="doc-link" required class="w-full px-4 py-3 rounded-sm border border-zen-border bg-surface focus:bg-white transition-colors text-ink font-sans text-sm" placeholder="請貼上網址 (例如：youtube.com/...)">
                 </div>
                 <div class="pt-6 flex justify-end gap-3 border-t border-zen-border mt-8">
                     <button type="button" id="cancel-modal" class="px-6 py-2.5 rounded-sm border border-zen-border text-slate-500 hover:text-ink font-serif tracking-widest transition-all bg-surface hover:bg-white">取消</button>
@@ -379,11 +379,11 @@
     <!-- 7. Javascript 邏輯區 (Firebase 模組化串接) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === Firebase 初始化 ===
-       const firebaseConfig = {
+      const firebaseConfig = {
   apiKey: "AIzaSyDa0NveTZKEo5mODD3XhX_9bA_bPOtcPlQ",
   authDomain: "infor-aded2.firebaseapp.com",
   projectId: "infor-aded2",
@@ -395,7 +395,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        let fbUser = null;
 
         const ITEMS_PER_PAGE = 10;
 
@@ -417,12 +416,12 @@
 
         // 日式傳統色標籤
         const colorClasses = [
-            'bg-[#f7ecee] text-[#b54454] border border-[#e8d3d7]', // 櫻 Sakura / 蘇芳
-            'bg-[#e9eee6] text-[#4f664b] border border-[#d2dcd0]', // 抹茶 Matcha / 松葉
-            'bg-[#e6ebf0] text-[#2b3a4a] border border-[#caced6]', // 空 Sora / 鐵紺
-            'bg-[#f0eaf4] text-[#6b4c8a] border border-[#d9ccdf]', // 藤 Fuji
-            'bg-[#f3eedb] text-[#8a7238] border border-[#e0d6b8]', // 芥子 Karashi
-            'bg-[#eae8e6] text-[#55585b] border border-[#cfccca]'  // 鈍色 Nibiiro
+            'bg-[#f7ecee] text-[#b54454] border border-[#e8d3d7]', // 櫻
+            'bg-[#e9eee6] text-[#4f664b] border border-[#d2dcd0]', // 抹茶
+            'bg-[#e6ebf0] text-[#2b3a4a] border border-[#caced6]', // 空
+            'bg-[#f0eaf4] text-[#6b4c8a] border border-[#d9ccdf]', // 藤
+            'bg-[#f3eedb] text-[#8a7238] border border-[#e0d6b8]', // 芥子
+            'bg-[#eae8e6] text-[#55585b] border border-[#cfccca]'  // 鈍色
         ];
 
         const getColorClass = (str) => {
@@ -439,27 +438,13 @@
                 const urlObj = new URL(url);
                 const hostname = urlObj.hostname.toLowerCase();
 
-                if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
-                    return { class: 'fab fa-youtube', color: 'text-[#b54454]', hover: 'group-hover:text-red-800' };
-                }
-                if (hostname.includes('drive.google.com') || hostname.includes('docs.google.com')) {
-                    return { class: 'fab fa-google-drive', color: 'text-[#2b3a4a]', hover: 'group-hover:text-ink' };
-                }
-                if (hostname.includes('github.com')) {
-                    return { class: 'fab fa-github', color: 'text-[#333631]', hover: 'group-hover:text-black' };
-                }
-                if (hostname.includes('dropbox.com')) {
-                    return { class: 'fab fa-dropbox', color: 'text-[#4f664b]', hover: 'group-hover:text-black' };
-                }
-                if (hostname.includes('figma.com')) {
-                    return { class: 'fab fa-figma', color: 'text-[#b54454]', hover: 'group-hover:text-[#8e3541]' };
-                }
-                if (hostname.includes('trello.com')) {
-                    return { class: 'fab fa-trello', color: 'text-[#2b3a4a]', hover: 'group-hover:text-[#1a242f]' };
-                }
-                if (hostname.includes('notion.so') || hostname.includes('notion.site')) {
-                    return { class: 'fas fa-cube', color: 'text-ink', hover: 'group-hover:text-black' };
-                }
+                if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return { class: 'fab fa-youtube', color: 'text-[#b54454]', hover: 'group-hover:text-red-800' };
+                if (hostname.includes('drive.google.com') || hostname.includes('docs.google.com')) return { class: 'fab fa-google-drive', color: 'text-[#2b3a4a]', hover: 'group-hover:text-ink' };
+                if (hostname.includes('github.com')) return { class: 'fab fa-github', color: 'text-[#333631]', hover: 'group-hover:text-black' };
+                if (hostname.includes('dropbox.com')) return { class: 'fab fa-dropbox', color: 'text-[#4f664b]', hover: 'group-hover:text-black' };
+                if (hostname.includes('figma.com')) return { class: 'fab fa-figma', color: 'text-[#b54454]', hover: 'group-hover:text-[#8e3541]' };
+                if (hostname.includes('trello.com')) return { class: 'fab fa-trello', color: 'text-[#2b3a4a]', hover: 'group-hover:text-[#1a242f]' };
+                if (hostname.includes('notion.so') || hostname.includes('notion.site')) return { class: 'fas fa-cube', color: 'text-ink', hover: 'group-hover:text-black' };
                 
                 return { class: 'fas fa-link', color: 'text-slate-400', hover: 'group-hover:text-primary' };
             } catch (e) {
@@ -512,10 +497,16 @@
             confirm(message) { return this.show('請確認', message, true); }
         };
 
+        // 取得正確的本地時區日期字串 (YYYY-MM-DD)
+        const getLocalDateString = () => {
+            const d = new Date();
+            return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+        };
+
         // === Firebase 資料庫層 API ===
         const DB = {
             async fetchAll() {
-                if (!fbUser) return;
+                if (!window.fbUser) return;
                 showLoading('讀取資料中...');
                 try {
                     const articlesRef = collection(db, 'artifacts', appId, 'public', 'data', 'articles');
@@ -530,12 +521,19 @@
                     state.users = usersSnap.docs.map(d => d.data());
                     state.categories = catSnap.docs.map(d => d.data().name);
 
-                    // 檢查預設值寫入
+                    // 檢查並寫入預設值 (改用 setDoc 防止觸發迴圈)
                     if (state.users.length === 0) {
-                        for (const u of defaultUsers) await this.saveUser(u);
+                        for (const u of defaultUsers) {
+                            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', u.id), u);
+                        }
+                        state.users = [...defaultUsers];
                     }
                     if (state.categories.length === 0) {
-                        for (const c of defaultCategories) await this.saveCategory(c);
+                        for (const c of defaultCategories) {
+                            const catId = 'c_' + Date.now() + Math.floor(Math.random()*1000);
+                            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', catId), { name: c });
+                        }
+                        state.categories = [...defaultCategories];
                     }
 
                 } catch (error) {
@@ -547,18 +545,18 @@
             },
 
             async save(docData) {
-                if (!fbUser) { await Dialog.alert('資料庫尚未連線或無權限，請重新整理'); return false; }
+                if (!window.fbUser) { await Dialog.alert('資料庫尚未連線，請重新整理'); return false; }
                 showLoading('儲存中...');
                 try {
                     if (docData.id) {
                         const original = state.documents.find(d => d.id === docData.id);
                         docData.timestamp = Date.now();
-                        docData.date = new Date().toISOString().split('T')[0];
+                        docData.date = getLocalDateString();
                         docData.views = original ? original.views : 0;
                     } else {
                         docData.id = 'info_' + Date.now();
                         docData.timestamp = Date.now();
-                        docData.date = new Date().toISOString().split('T')[0];
+                        docData.date = getLocalDateString();
                         docData.views = 0;
                     }
                     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'articles', docData.id), docData);
@@ -574,7 +572,7 @@
             },
 
             async delete(id) {
-                if (!fbUser) return false;
+                if (!window.fbUser) return false;
                 if (!(await Dialog.confirm('確定要刪除這筆資訊嗎？\n※此動作無法復原。'))) return false;
                 showLoading('刪除中...');
                 try {
@@ -591,18 +589,17 @@
             },
 
             async incrementView(id) {
-                if (!fbUser) return;
+                if (!window.fbUser) return;
                 const item = state.documents.find(d => d.id === id);
                 if (item) {
                     item.views = (Number(item.views) || 0) + 1;
-                    // 在背景執行計數更新
                     setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'articles', id), { views: item.views }, { merge: true })
                         .catch(err => console.error("計數更新失敗", err));
                 }
             },
 
             async saveUser(userData) {
-                if (!fbUser) return false;
+                if (!window.fbUser) return false;
                 showLoading('處理中...');
                 try {
                     if (!userData.id) userData.id = 'u_' + Date.now();
@@ -619,7 +616,7 @@
             },
 
             async deleteUser(id) {
-                if (!fbUser) return false;
+                if (!window.fbUser) return false;
                 showLoading('處理中...');
                 try {
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', id));
@@ -635,7 +632,7 @@
             },
 
             async saveCategory(name) {
-                if (!fbUser) return false;
+                if (!window.fbUser) return false;
                 if (!state.categories.includes(name)) {
                     showLoading('處理中...');
                     try {
@@ -655,7 +652,7 @@
             },
 
             async deleteCategory(name) {
-                if (!fbUser) return false;
+                if (!window.fbUser) return false;
                 showLoading('處理中...');
                 try {
                     const catRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
@@ -685,8 +682,8 @@
             backToDashBtn: document.getElementById('back-to-dash-btn'),
             loginBtn: document.getElementById('login-btn'),
             logoutBtn: document.getElementById('logout-btn'),
-            changePwdBtn: document.getElementById('change-pwd-btn'),
             manageUsersBtn: document.getElementById('manage-users-btn'),
+            changePwdBtn: document.getElementById('change-pwd-btn'),
             userInfo: document.getElementById('user-info'),
             searchInput: document.getElementById('search-input'),
             categoryFilter: document.getElementById('category-filter'),
@@ -720,30 +717,28 @@
             loadingText: document.getElementById('loading-text')
         };
 
-        // Firebase 授權登入後初始化
-        window.addEventListener('DOMContentLoaded', async () => {
+        // Firebase 授權登入後初始化 (徹底解決權限時序問題)
+        const initApp = async () => {
             try {
-                // 安全防護：使用自訂 Token 驗證以取得寫入權限，若無則降級為匿名
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(auth);
                 }
-                onAuthStateChanged(auth, (user) => {
-                    fbUser = user;
-                    if (user && !window.hasInitApp) {
-                        window.hasInitApp = true;
-                        init();
-                    }
-                });
+                window.fbUser = auth.currentUser;
             } catch (e) {
                 console.error("Firebase auth failed", e);
-                if(!window.hasInitApp){
-                    window.hasInitApp = true;
-                    init(); // 若授權失敗也嘗試進入系統以防白畫面
-                }
+                window.fbUser = null;
             }
-        });
+            
+            // 等待畫面元件載入完畢再啟動事件
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        };
+        initApp(); // 直接啟動
 
         function init() {
             showDashboard();
@@ -817,8 +812,9 @@
             });
 
             filtered.sort((a, b) => {
-                const dateA = new Date(a.date).getTime();
-                const dateB = new Date(b.date).getTime();
+                // 安全防呆：如果舊資料沒有 date 欄位，就用 0 帶過避免崩潰
+                const dateA = a.date ? new Date(a.date).getTime() : 0;
+                const dateB = b.date ? new Date(b.date).getTime() : 0;
                 if (dateA === dateB) {
                     return (Number(b.timestamp) || 0) - (Number(a.timestamp) || 0);
                 }
@@ -840,7 +836,7 @@
             renderPagination(startIndex + 1, endIndex, totalItems, totalPages);
         }
 
-        // 把由 HTML onclick 觸發的函數掛載到 window，使 module 中仍可讀取
+        // 把由 HTML onclick 觸發的函數掛載到 window
         window.openDocument = (id, link) => {
             window.open(link, '_blank');
             const doc = state.documents.find(d => d.id === id);
@@ -895,6 +891,8 @@
                 }
 
                 const viewsCount = Number(doc.views) || 0;
+                // 防呆：如果日期不存在，顯示未知日期避免 replace 出錯
+                const displayDate = doc.date ? doc.date.replace(/-/g, '/') : '未知日期';
 
                 tr.innerHTML = `
                     <td class="px-6 py-4">
@@ -915,7 +913,7 @@
                         ${viewsCount > 0 ? `<span class="text-primary bg-surface border border-zen-border px-2 py-0.5 rounded-sm font-bold text-xs">${viewsCount}</span>` : `<span class="text-slate-300 text-xs">—</span>`}
                     </td>
                     <td class="px-6 py-4 text-[13px] text-slate-400 font-sans tracking-wider">
-                        ${doc.date.replace(/-/g, '/')}
+                        ${displayDate}
                     </td>
                     ${actionHtml}
                 `;
@@ -941,7 +939,7 @@
                 const p = document.getElementById('password').value.trim();
                 let validUser = state.users.find(user => user.username === u && user.password === p);
                 
-                // 強制備用登入機制
+                // 強制備用登入機制 (防呆：即使資料庫沒拉到，也要能登入)
                 if (!validUser && u === 'admin' && p === '123') {
                     validUser = { id: 'u_admin', username: 'admin', role: 'admin' };
                 }
@@ -1022,6 +1020,15 @@
                 const currentUser = JSON.parse(sessionStorage.getItem('logged_user'));
                 const userInDb = state.users.find(u => u.id === currentUser.id);
 
+                // 若剛好是強制登入進來且未建立資料的 admin，做特殊防護
+                if (!userInDb && currentUser.username === 'admin') {
+                    await DB.saveUser({ id: 'u_admin', username: 'admin', password: newPwd, role: 'admin' });
+                    await Dialog.alert('密碼變更成功！請重新登入。');
+                    sessionStorage.removeItem('logged_user');
+                    checkLoginStatus(); showLogin(); els.pwdModal.classList.add('hidden');
+                    return;
+                }
+
                 if (!userInDb || userInDb.password !== oldPwd) {
                     await Dialog.alert('舊密碼錯誤！');
                     return;
@@ -1045,15 +1052,20 @@
 
             els.docForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const currentUser = JSON.parse(sessionStorage.getItem('logged_user'));
+                const currentUser = JSON.parse(sessionStorage.getItem('logged_user')) || { username: '未知' };
                 const docId = document.getElementById('doc-id').value;
                 let originalDoc = docId ? state.documents.find(d => d.id === docId) : null;
 
+                let linkValue = document.getElementById('doc-link').value.trim();
+                if (linkValue && !/^https?:\/\//i.test(linkValue)) {
+                    linkValue = 'https://' + linkValue;
+                }
+
                 const docData = {
                     id: docId,
-                    title: document.getElementById('doc-title').value,
+                    title: document.getElementById('doc-title').value.trim(),
                     category: document.getElementById('doc-category').value,
-                    link: document.getElementById('doc-link').value,
+                    link: linkValue,
                     author: originalDoc ? originalDoc.author : currentUser.username
                 };
                 
@@ -1075,8 +1087,8 @@
 
             els.userForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const u = document.getElementById('new-username').value;
-                const p = document.getElementById('new-password').value;
+                const u = document.getElementById('new-username').value.trim();
+                const p = document.getElementById('new-password').value.trim();
                 const r = document.getElementById('new-role').value;
                 
                 if(state.users.some(user => user.username === u)) {
