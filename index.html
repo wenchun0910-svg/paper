@@ -383,7 +383,7 @@
         import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // === Firebase 初始化 ===
-        const firebaseConfig = {
+    const firebaseConfig = {
   apiKey: "AIzaSyDa0NveTZKEo5mODD3XhX_9bA_bPOtcPlQ",
   authDomain: "infor-aded2.firebaseapp.com",
   projectId: "infor-aded2",
@@ -391,6 +391,7 @@
   messagingSenderId: "447138107771",
   appId: "1:447138107771:web:399443bb0e13475d766dde"
 };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
