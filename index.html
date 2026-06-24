@@ -7,42 +7,49 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 日式風格字體與基本設定 */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600&display=swap');
+        /* 可愛圓潤風格字體與基本設定 */
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
         
         :root {
-            --washi: #F9F8F4; /* 和紙白 */
-            --matcha: #8A9A5B; /* 抹茶綠 */
-            --ai: #1D2F6F; /* 靛藍 */
-            --sumi: #2C2C2C; /* 墨黑 */
-            --sakura: #F2E3E5; /* 櫻花粉 */
-            --wood: #D4B59E; /* 原木色 */
+            --bg-outer: #F4E6D9; /* 外層淺橘粉色 */
+            --bg-inner: #FDF8F3; /* 內層米白色 */
+            --text-main: #5C4A3D; /* 深棕色文字 */
+            
+            /* 標籤/按鈕的五個主題色 */
+            --color-red: #CD7B71;
+            --color-yellow: #EFD28D;
+            --color-green: #99B44F;
+            --color-blue: #86A7C1;
+            --color-pink: #F1CBBE;
         }
 
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: var(--washi);
-            color: var(--sumi);
+            background-color: var(--bg-outer);
+            color: var(--text-main);
+            /* 外層增加一些留白，讓內層看起來像是一張卡片 */
+            padding: 1rem;
         }
 
-        h1, h2, h3, .serif-font {
-            font-family: 'Noto Serif TC', serif;
+        /* 標題與特殊文字使用 Fredoka 或更粗的黑體 */
+        h1, h2, h3, .rounded-font {
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            font-weight: 700;
         }
 
-        .noren-header {
-            background-color: var(--ai);
-            color: white;
-            border-bottom: 4px solid var(--matcha);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        .main-container {
+            background-color: var(--bg-inner);
+            border-radius: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            border: 4px solid #ffffff;
         }
 
         .card-hover {
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .card-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            border-color: var(--matcha);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -8px rgba(92, 74, 61, 0.15);
         }
 
         /* 隱藏捲軸但保留功能 */
@@ -62,237 +69,254 @@
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
+
+        /* 客製化輸入框與選擇框 */
+        .cute-input {
+            border: 2px solid #E5D5C5;
+            border-radius: 9999px; /* 膠囊狀 */
+            background-color: #ffffff;
+            color: var(--text-main);
+            transition: border-color 0.2s;
+        }
+        .cute-input:focus {
+            outline: none;
+            border-color: var(--color-green);
+        }
+        textarea.cute-input {
+            border-radius: 1.5rem; /* 文本框用一般大圓角 */
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col items-center">
 
-    <!-- 頂部導覽列 (暖簾風格) -->
-    <header class="noren-header py-4 px-6 flex justify-between items-center sticky top-0 z-40">
-        <div class="flex items-center gap-3">
-            <i class="fa-solid fa-fan text-2xl text-[var(--washi)]"></i>
-            <h1 id="systemHeaderTitle" class="text-2xl font-semibold tracking-wider">雲端文庫</h1>
-        </div>
-        <div class="flex items-center gap-4">
-            <div id="userInfo" class="hidden text-sm md:text-base">
-                <span class="mr-2"><i class="fa-solid fa-user-circle"></i> <span id="currentUserName"></span> (<span id="currentUserRoleLabel"></span>)</span>
-                <button onclick="app.logout()" class="hover:text-[var(--sakura)] underline transition">登出</button>
-            </div>
-            <button id="loginBtn" onclick="app.openModal('loginModal')" class="bg-[var(--washi)] text-[var(--ai)] px-4 py-1.5 rounded-sm hover:bg-gray-200 transition text-sm font-medium">
-                登入
-            </button>
-        </div>
-    </header>
-
-    <!-- 主內容區 -->
-    <main class="flex-grow container mx-auto px-4 py-8 max-w-6xl">
+    <!-- 主體大卡片容器 -->
+    <div class="main-container w-full max-w-6xl flex-grow flex flex-col overflow-hidden relative">
         
-        <!-- 管理員工具列 (登入後顯示) -->
-        <div id="adminToolbar" class="hidden mb-8 bg-white p-4 rounded-md shadow-sm border border-[var(--wood)] flex flex-wrap gap-4 items-center justify-between">
-            <div class="flex gap-3">
-                <button onclick="app.openModal('resourceModal')" class="bg-[var(--matcha)] text-white px-4 py-2 rounded-sm hover:bg-opacity-90 transition shadow-sm">
-                    <i class="fa-solid fa-plus mr-1"></i> 新增文件 / 網站
+        <!-- 頂部導覽列 -->
+        <header class="py-5 px-6 md:px-10 flex justify-between items-center sticky top-0 z-40 bg-[var(--bg-inner)]/90 backdrop-blur-md border-b-2 border-[#F4E6D9]">
+            <!-- 點擊標題回首頁 -->
+            <div class="flex items-center gap-3 cursor-pointer group" onclick="app.goHome()" title="回首頁">
+                <i class="fa-solid fa-seedling text-3xl text-[var(--color-green)] group-hover:scale-110 transition-transform"></i>
+                <h1 id="systemHeaderTitle" class="text-3xl text-[var(--text-main)] rounded-font group-hover:text-[var(--color-red)] transition-colors tracking-wide">雲端文庫</h1>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div id="userInfo" class="hidden text-sm md:text-base font-medium">
+                    <span class="mr-3 text-[var(--text-main)]"><i class="fa-solid fa-user-circle text-[var(--color-blue)]"></i> <span id="currentUserName"></span></span>
+                    <button onclick="app.logout()" class="text-gray-400 hover:text-[var(--color-red)] transition">登出</button>
+                </div>
+                <button id="loginBtn" onclick="app.openModal('loginModal')" class="bg-[var(--color-yellow)] text-[var(--text-main)] px-6 py-2 rounded-full hover:brightness-105 transition font-bold shadow-sm">
+                    登入
                 </button>
             </div>
-            <div id="accountManagerBtn" class="hidden">
-                <button onclick="app.openModal('settingsModal')" class="border border-[var(--ai)] text-[var(--ai)] px-4 py-2 rounded-sm hover:bg-[var(--ai)] hover:text-white transition shadow-sm">
-                    <i class="fa-solid fa-sliders-h mr-1"></i> 系統設定
-                </button>
+        </header>
+
+        <!-- 主內容區 -->
+        <main class="flex-grow px-6 md:px-10 py-8">
+            
+            <!-- 管理員工具列 -->
+            <div id="adminToolbar" class="hidden mb-8 bg-white p-5 rounded-[2rem] shadow-sm border-2 border-[#F4E6D9] flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex gap-3">
+                    <button onclick="app.openModal('resourceModal')" class="bg-[var(--color-green)] text-white font-bold px-6 py-2.5 rounded-full hover:brightness-105 transition shadow-sm">
+                        <i class="fa-solid fa-plus mr-1"></i> 新增文件 / 網站
+                    </button>
+                </div>
+                <div id="accountManagerBtn" class="hidden">
+                    <button onclick="app.openModal('settingsModal')" class="bg-[var(--color-blue)] text-white font-bold px-6 py-2.5 rounded-full hover:brightness-105 transition shadow-sm">
+                        <i class="fa-solid fa-sliders-h mr-1"></i> 系統設定
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <!-- 搜尋與篩選列 -->
-        <div class="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-md shadow-sm">
-            <div class="flex-grow w-full md:w-auto relative">
-                <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input type="text" id="searchInput" placeholder="搜尋標題或描述..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-[var(--ai)] focus:ring-1 focus:ring-[var(--ai)] transition" oninput="app.handleSearch()">
+            <!-- 搜尋與篩選列 -->
+            <div class="mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="flex-grow w-full md:w-auto relative">
+                    <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="搜尋標題或描述..." class="cute-input w-full pl-11 pr-4 py-2.5 shadow-sm" oninput="app.handleSearch()">
+                </div>
+                <div class="w-full md:w-auto flex gap-3">
+                    <select id="typeFilter" class="cute-input px-4 py-2.5 shadow-sm cursor-pointer" onchange="app.handleFilter()">
+                        <option value="all">所有類型</option>
+                        <option value="document">文件檔案</option>
+                        <option value="link">網站連結</option>
+                    </select>
+                    <select id="categoryFilter" class="cute-input px-4 py-2.5 shadow-sm cursor-pointer min-w-[120px]" onchange="app.handleFilter()">
+                        <option value="all">所有分類</option>
+                        <!-- 動態生成分類 -->
+                    </select>
+                </div>
             </div>
-            <div class="w-full md:w-64 flex gap-2">
-                <select id="typeFilter" class="w-1/2 p-2 border border-gray-300 rounded-sm focus:outline-none focus:border-[var(--ai)]" onchange="app.handleFilter()">
-                    <option value="all">所有類型</option>
-                    <option value="document">文件</option>
-                    <option value="link">網站連結</option>
-                </select>
-                <select id="categoryFilter" class="w-1/2 p-2 border border-gray-300 rounded-sm focus:outline-none focus:border-[var(--ai)]" onchange="app.handleFilter()">
-                    <option value="all">所有分類</option>
-                    <!-- 動態生成分類 -->
-                </select>
+
+            <!-- 資源列表 -->
+            <div id="resourceContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                <!-- 資源卡片動態生成 -->
+                <div class="text-center col-span-full py-20 text-[var(--text-main)] opacity-60">
+                    <i class="fa-solid fa-seedling animate-bounce text-4xl mb-4"></i>
+                    <p class="font-bold text-lg">資料發芽中，請稍候...</p>
+                </div>
             </div>
-        </div>
 
-        <!-- 資源列表 -->
-        <div id="resourceContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-            <!-- 資源卡片會動態生成在這裡 -->
-            <div class="text-center col-span-full py-12 text-gray-500">
-                <i class="fa-solid fa-spinner fa-spin text-3xl mb-3"></i>
-                <p>資料載入中，請稍候...</p>
+            <!-- 分頁控制 -->
+            <div id="pagination" class="mt-12 mb-4 flex justify-center items-center gap-2 font-bold">
+                <!-- 分頁按鈕動態生成 -->
             </div>
-        </div>
 
-        <!-- 分頁控制 -->
-        <div id="pagination" class="mt-8 flex justify-center items-center gap-2">
-            <!-- 分頁按鈕動態生成 -->
-        </div>
+        </main>
 
-    </main>
-
-    <footer class="text-center py-6 text-sm text-gray-500 border-t border-gray-200 mt-auto">
-        <p id="systemFooterTitle">&copy; 2026 雲端文庫. All rights reserved.</p>
-    </footer>
+        <footer class="text-center py-6 text-sm text-[var(--text-main)] opacity-70 mt-auto border-t-2 border-[#F4E6D9] bg-[#FDF8F3]">
+            <p id="systemFooterTitle">&copy; 2026 雲端文庫. All rights reserved.</p>
+        </footer>
+    </div>
 
     <!-- ================= 模態框 (Modals) ================= -->
 
     <!-- 1. 登入模態框 -->
-    <div id="loginModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-md shadow-xl w-full max-w-md overflow-hidden modal-fade">
-            <div class="bg-[var(--ai)] text-white px-6 py-4 flex justify-between items-center">
-                <h2 class="text-lg font-semibold serif-font"><i class="fa-solid fa-door-open mr-2"></i>系統登入</h2>
-                <button onclick="app.closeModal('loginModal')" class="hover:text-gray-300"><i class="fa-solid fa-times"></i></button>
+    <div id="loginModal" class="hidden fixed inset-0 bg-[var(--text-main)] bg-opacity-40 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-[var(--bg-inner)] rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden modal-fade border-4 border-white">
+            <div class="px-8 py-6 text-center border-b-2 border-[#F4E6D9]">
+                <h2 class="text-2xl font-bold rounded-font text-[var(--text-main)]"><i class="fa-solid fa-leaf text-[var(--color-green)] mr-2"></i>登入文庫</h2>
             </div>
-            <div class="p-6">
-                <div id="loginError" class="hidden mb-4 p-3 bg-red-100 text-red-700 rounded-sm text-sm"></div>
-                <div id="initAdminNotice" class="hidden mb-4 p-3 bg-blue-50 text-[var(--ai)] border border-blue-200 rounded-sm text-sm">
-                    <i class="fa-solid fa-info-circle mr-1"></i> 系統目前無帳號，請建立首位管理員。
+            <div class="p-8">
+                <button onclick="app.closeModal('loginModal')" class="absolute top-6 right-6 text-gray-400 hover:text-[var(--color-red)] text-xl"><i class="fa-solid fa-times"></i></button>
+                
+                <div id="loginError" class="hidden mb-4 p-3 bg-red-100 text-red-700 rounded-xl text-sm font-bold text-center"></div>
+                <div id="initAdminNotice" class="hidden mb-4 p-3 bg-[var(--color-blue)] bg-opacity-20 text-[var(--color-blue)] rounded-xl text-sm font-bold text-center">
+                    <i class="fa-solid fa-info-circle mr-1"></i> 系統無帳號，請建立首位管理員
                 </div>
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">帳號</label>
-                    <input type="text" id="loginUsername" class="w-full p-2 border border-gray-300 rounded-sm focus:outline-none focus:border-[var(--ai)]">
+                <div class="mb-5">
+                    <label class="block text-sm font-bold text-[var(--text-main)] mb-2 ml-2">帳號</label>
+                    <input type="text" id="loginUsername" class="cute-input w-full px-4 py-3">
                 </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">密碼</label>
-                    <input type="password" id="loginPassword" class="w-full p-2 border border-gray-300 rounded-sm focus:outline-none focus:border-[var(--ai)]">
+                <div class="mb-8">
+                    <label class="block text-sm font-bold text-[var(--text-main)] mb-2 ml-2">密碼</label>
+                    <input type="password" id="loginPassword" class="cute-input w-full px-4 py-3">
                 </div>
-                <button id="submitLoginBtn" onclick="app.processLogin()" class="w-full bg-[var(--ai)] text-white py-2 rounded-sm hover:bg-opacity-90 transition font-medium">登入</button>
+                <button id="submitLoginBtn" onclick="app.processLogin()" class="w-full bg-[var(--color-green)] text-white text-lg py-3 rounded-full hover:brightness-105 transition font-bold shadow-md">進入</button>
             </div>
         </div>
     </div>
 
     <!-- 2. 新增/編輯 資源模態框 -->
-    <div id="resourceModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-md shadow-xl w-full max-w-lg overflow-hidden modal-fade">
-            <div class="bg-[var(--matcha)] text-white px-6 py-4 flex justify-between items-center">
-                <h2 id="resourceModalTitle" class="text-lg font-semibold serif-font">新增文件 / 網站</h2>
-                <button onclick="app.closeModal('resourceModal')" class="hover:text-gray-200"><i class="fa-solid fa-times"></i></button>
+    <div id="resourceModal" class="hidden fixed inset-0 bg-[var(--text-main)] bg-opacity-40 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-[var(--bg-inner)] rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden modal-fade border-4 border-white">
+            <div class="px-8 py-6 flex justify-between items-center border-b-2 border-[#F4E6D9]">
+                <h2 id="resourceModalTitle" class="text-2xl font-bold rounded-font text-[var(--text-main)]">新增文件 / 網站</h2>
+                <button onclick="app.closeModal('resourceModal')" class="text-gray-400 hover:text-[var(--color-red)] text-xl"><i class="fa-solid fa-times"></i></button>
             </div>
-            <div class="p-6 max-h-[80vh] overflow-y-auto no-scrollbar">
+            <div class="p-8 max-h-[75vh] overflow-y-auto no-scrollbar">
                 <input type="hidden" id="resId">
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">類型 <span class="text-red-500">*</span></label>
+                <div class="mb-5">
+                    <label class="block text-sm font-bold text-[var(--text-main)] mb-2 ml-2">資源類型 <span class="text-[var(--color-red)]">*</span></label>
                     <div class="flex gap-4">
-                        <label class="flex items-center cursor-pointer">
-                            <input type="radio" name="resType" value="document" checked class="mr-2 text-[var(--matcha)] focus:ring-[var(--matcha)]"> 
-                            <i class="fa-regular fa-file-alt mr-1 text-gray-500"></i> 文件檔案
+                        <label class="flex items-center cursor-pointer bg-white px-4 py-2 border-2 border-[#E5D5C5] rounded-full has-[:checked]:border-[var(--color-green)] has-[:checked]:bg-[var(--color-green)] has-[:checked]:bg-opacity-10 transition">
+                            <input type="radio" name="resType" value="document" checked class="hidden"> 
+                            <i class="fa-regular fa-file-alt mr-2 text-[var(--text-main)]"></i> <span class="font-bold text-[var(--text-main)]">文件檔案</span>
                         </label>
-                        <label class="flex items-center cursor-pointer">
-                            <input type="radio" name="resType" value="link" class="mr-2 text-[var(--matcha)] focus:ring-[var(--matcha)]"> 
-                            <i class="fa-solid fa-link mr-1 text-gray-500"></i> 網站連結
+                        <label class="flex items-center cursor-pointer bg-white px-4 py-2 border-2 border-[#E5D5C5] rounded-full has-[:checked]:border-[var(--color-green)] has-[:checked]:bg-[var(--color-green)] has-[:checked]:bg-opacity-10 transition">
+                            <input type="radio" name="resType" value="link" class="hidden"> 
+                            <i class="fa-solid fa-link mr-2 text-[var(--text-main)]"></i> <span class="font-bold text-[var(--text-main)]">網站連結</span>
                         </label>
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">標題 <span class="text-red-500">*</span></label>
-                    <input type="text" id="resTitle" placeholder="例如：2026年專案計畫書" class="w-full p-2 border border-gray-300 rounded-sm focus:outline-none focus:border-[var(--matcha)]">
+                <div class="mb-5">
+                    <label class="block text-sm font-bold text-[var(--text-main)] mb-2 ml-2">標題名稱 <span class="text-[var(--color-red)]">*</span></label>
+                    <input type="text" id="resTitle" placeholder="例如：2026年專案計畫書" class="cute-input w-full px-4 py-3">
                 </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">連結 URL <span class="text-red-500">*</span></label>
-                    <input type="url" id="resUrl" placeholder="https://..." class="w-full p-2 border border-gray-300 rounded-sm focus:outline-none focus:border-[var(--matcha)]">
-                    <p class="text-xs text-gray-500 mt-1">請輸入完整的網址（包含 http:// 或 https://）</p>
+                <div class="mb-5">
+                    <label class="block text-sm font-bold text-[var(--text-main)] mb-2 ml-2">連結網址 (URL) <span class="text-[var(--color-red)]">*</span></label>
+                    <input type="url" id="resUrl" placeholder="https://..." class="cute-input w-full px-4 py-3">
                 </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">分類 <span class="text-red-500">*</span></label>
-                    <select id="resCategory" class="w-full p-2 border border-gray-300 rounded-sm focus:outline-none focus:border-[var(--matcha)] bg-white">
-                        <option value="">請選擇分類</option>
+                <div class="mb-5">
+                    <label class="block text-sm font-bold text-[var(--text-main)] mb-2 ml-2">選擇分類 <span class="text-[var(--color-red)]">*</span></label>
+                    <select id="resCategory" class="cute-input w-full px-4 py-3 cursor-pointer">
+                        <option value="">請選擇...</option>
                         <!-- 動態填充選項 -->
                     </select>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">描述 (選填)</label>
-                    <textarea id="resDesc" rows="3" class="w-full p-2 border border-gray-300 rounded-sm focus:outline-none focus:border-[var(--matcha)]" placeholder="簡單描述內容..."></textarea>
+                <div class="mb-8">
+                    <label class="block text-sm font-bold text-[var(--text-main)] mb-2 ml-2">描述 (選填)</label>
+                    <textarea id="resDesc" rows="3" class="cute-input w-full px-4 py-3 resize-none" placeholder="簡單描述內容..."></textarea>
                 </div>
 
                 <div class="flex justify-end gap-3">
-                    <button onclick="app.closeModal('resourceModal')" class="px-4 py-2 border border-gray-300 rounded-sm hover:bg-gray-50 transition">取消</button>
-                    <button onclick="app.saveResource()" class="bg-[var(--matcha)] text-white px-6 py-2 rounded-sm hover:bg-opacity-90 transition">儲存</button>
+                    <button onclick="app.closeModal('resourceModal')" class="px-6 py-2.5 rounded-full font-bold text-[var(--text-main)] hover:bg-[#E5D5C5] transition">取消</button>
+                    <button onclick="app.saveResource()" class="bg-[var(--color-green)] text-white px-8 py-2.5 rounded-full font-bold hover:brightness-105 transition shadow-md">儲存</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- 3. 系統設定模態框 (帳號與分類管理，僅管理員可見) -->
-    <div id="settingsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-md shadow-xl w-full max-w-4xl overflow-hidden modal-fade flex flex-col max-h-[90vh]">
-            <div class="bg-gray-100 text-[var(--sumi)] px-6 py-4 flex justify-between items-center border-b shrink-0">
-                <h2 class="text-lg font-bold tracking-wide"><i class="fa-solid fa-sliders-h mr-2"></i>系統設定</h2>
-                <button onclick="app.closeModal('settingsModal')" class="text-gray-500 hover:text-gray-800 transition"><i class="fa-solid fa-times"></i></button>
+    <div id="settingsModal" class="hidden fixed inset-0 bg-[var(--text-main)] bg-opacity-40 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-[var(--bg-inner)] rounded-[2rem] shadow-2xl w-full max-w-4xl overflow-hidden modal-fade flex flex-col max-h-[90vh] border-4 border-white">
+            <div class="px-8 py-6 flex justify-between items-center border-b-2 border-[#F4E6D9] shrink-0 bg-white bg-opacity-50">
+                <h2 class="text-2xl font-bold rounded-font text-[var(--text-main)]"><i class="fa-solid fa-sliders-h text-[var(--color-blue)] mr-2"></i>系統設定</h2>
+                <button onclick="app.closeModal('settingsModal')" class="text-gray-400 hover:text-[var(--color-red)] text-xl"><i class="fa-solid fa-times"></i></button>
             </div>
             
-            <div class="p-6 overflow-y-auto no-scrollbar flex-grow bg-white">
+            <div class="p-8 overflow-y-auto no-scrollbar flex-grow">
                 
                 <!-- 基本設定區塊 -->
-                <div class="mb-10">
-                    <h3 class="font-bold text-lg mb-4 border-l-4 border-[var(--sumi)] pl-2 text-[var(--sumi)] flex items-center gap-2">
-                        基本設定
+                <div class="mb-12 bg-white p-6 rounded-3xl border-2 border-[#F4E6D9]">
+                    <h3 class="font-bold text-lg mb-4 text-[var(--text-main)] flex items-center gap-2">
+                        <i class="fa-solid fa-palette text-[var(--color-yellow)] text-xl"></i> 基本設定
                     </h3>
-                    <div class="flex flex-col md:flex-row gap-4 max-w-2xl">
-                        <div class="flex-grow">
-                            <label class="block text-sm text-gray-500 mb-1">系統名稱</label>
-                            <input type="text" id="sysNameInput" placeholder="例如：雲端文庫" class="w-full p-2 border border-gray-300 rounded-sm focus:outline-none focus:border-[var(--ai)]">
+                    <div class="flex flex-col md:flex-row gap-4 max-w-2xl items-end">
+                        <div class="flex-grow w-full">
+                            <label class="block text-sm font-bold text-[var(--text-main)] mb-2 ml-2">更改網站名稱</label>
+                            <input type="text" id="sysNameInput" placeholder="例如：雲端文庫" class="cute-input w-full px-4 py-2.5">
                         </div>
-                        <div class="flex items-end">
-                            <button onclick="app.saveSystemName()" class="bg-gray-50 border border-gray-200 text-gray-600 px-6 py-2 rounded-sm hover:bg-gray-100 transition whitespace-nowrap text-sm h-[42px]">儲存名稱</button>
+                        <button onclick="app.saveSystemName()" class="bg-[var(--color-yellow)] text-[var(--text-main)] font-bold px-6 py-2.5 rounded-full hover:brightness-105 transition whitespace-nowrap shadow-sm">更新名稱</button>
+                    </div>
+                </div>
+
+                <!-- 分類管理區塊 -->
+                <div class="mb-12 bg-white p-6 rounded-3xl border-2 border-[#F4E6D9]">
+                    <h3 class="font-bold text-lg mb-4 text-[var(--text-main)] flex items-center gap-2">
+                        <i class="fa-solid fa-tags text-[var(--color-pink)] text-xl"></i> 分類管理
+                    </h3>
+                    
+                    <div class="mb-6 max-w-2xl">
+                        <label class="block text-sm font-bold text-[var(--text-main)] mb-2 ml-2">新增分類名稱</label>
+                        <div class="flex gap-3">
+                            <input type="text" id="newCategoryInput" placeholder="輸入新分類..." class="cute-input flex-grow px-4 py-2.5">
+                            <button onclick="app.saveManagedCategory()" class="bg-[var(--color-pink)] text-[var(--text-main)] font-bold px-6 py-2.5 rounded-full hover:brightness-105 transition whitespace-nowrap shadow-sm">新增</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-[var(--bg-inner)] border-2 border-[#F4E6D9] rounded-2xl p-5 min-h-[100px]">
+                        <p class="text-sm font-bold text-gray-400 mb-3 ml-1">目前的分類清單：</p>
+                        <div id="categoryPillList" class="flex flex-wrap gap-3">
+                            <!-- 分類標籤動態生成 -->
                         </div>
                     </div>
                 </div>
 
                 <!-- 帳號管理區塊 -->
-                <div class="mb-10">
-                    <h3 class="font-bold text-lg mb-4 border-l-4 border-[var(--sumi)] pl-2 text-[var(--sumi)] flex items-center gap-2">
-                        帳號管理
+                <div class="bg-white p-6 rounded-3xl border-2 border-[#F4E6D9]">
+                    <h3 class="font-bold text-lg mb-4 text-[var(--text-main)] flex items-center gap-2">
+                        <i class="fa-solid fa-users text-[var(--color-blue)] text-xl"></i> 帳號管理
                     </h3>
-                    <div class="flex flex-col md:flex-row gap-6">
-                        <!-- 帳號列表與管理表格 -->
-                        <div class="w-full overflow-x-auto border border-gray-200 rounded-sm">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-[#F9F8F4] text-sm border-b">
-                                        <th class="p-3 font-medium text-gray-700 w-1/4">帳號</th>
-                                        <th class="p-3 font-medium text-gray-700 w-1/4">密碼</th>
-                                        <th class="p-3 font-medium text-gray-700 w-1/4">權限</th>
-                                        <th class="p-3 font-medium text-gray-700 text-center w-1/4">刪除</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="userTableBody">
-                                    <!-- 用戶列表生成 -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 分類管理區塊 -->
-                <div>
-                    <h3 class="font-bold text-lg mb-4 border-l-4 border-[var(--sumi)] pl-2 text-[var(--sumi)] flex items-center gap-2">
-                        分類管理
-                    </h3>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm text-gray-500 mb-2">新增分類名稱</label>
-                        <div class="flex gap-2 max-w-2xl">
-                            <input type="text" id="newCategoryInput" placeholder="例如：生活、科技" class="flex-grow p-2.5 border border-gray-200 rounded-sm focus:border-[var(--matcha)] focus:outline-none bg-gray-50 text-sm">
-                            <button onclick="app.saveManagedCategory()" class="bg-gray-50 border border-gray-200 text-gray-600 px-6 py-2.5 rounded-sm hover:bg-gray-100 transition whitespace-nowrap text-sm">新增分類</button>
-                        </div>
-                    </div>
-
-                    <div class="bg-[#F9F9F9] border border-gray-200 rounded-sm p-5 min-h-[120px]">
-                        <p class="text-sm text-gray-400 mb-4">目前的分類清單：</p>
-                        <div id="categoryPillList" class="flex flex-wrap gap-3">
-                            <!-- 分類標籤動態生成 -->
-                        </div>
+                    <div class="w-full overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="border-b-2 border-[#F4E6D9]">
+                                    <th class="p-3 font-bold text-[var(--text-main)] w-1/4">帳號</th>
+                                    <th class="p-3 font-bold text-[var(--text-main)] w-1/4">密碼</th>
+                                    <th class="p-3 font-bold text-[var(--text-main)] w-1/4">權限</th>
+                                    <th class="p-3 font-bold text-[var(--text-main)] text-center w-1/4">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody">
+                                <!-- 用戶列表生成 -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -301,8 +325,8 @@
     </div>
 
     <!-- 提示訊息 (Toast) -->
-    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-gray-800 text-white px-6 py-3 rounded shadow-lg z-[60] flex items-center gap-2">
-        <i id="toastIcon" class="fa-solid fa-check-circle text-green-400"></i>
+    <div id="toast" class="fixed bottom-8 right-8 transform translate-y-20 opacity-0 transition-all duration-300 bg-[var(--text-main)] text-white px-6 py-4 rounded-full shadow-xl z-[60] flex items-center gap-3 font-bold">
+        <i id="toastIcon" class="fa-solid fa-face-smile text-[var(--color-yellow)] text-xl"></i>
         <span id="toastMsg">操作成功</span>
     </div>
 
@@ -312,8 +336,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase 初始化與全域變數配置
-       const firebaseConfig = {
+            const firebaseConfig = {
   apiKey: "AIzaSyDa0NveTZKEo5mODD3XhX_9bA_bPOtcPlQ",
   authDomain: "infor-aded2.firebaseapp.com",
   projectId: "infor-aded2",
@@ -327,23 +350,28 @@
         const db = getFirestore(app_firebase);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-wafu-app';
         
-        // 集合名稱定義 (遵循嚴格路徑規則)
         const USERS_COLLECTION = 'wafu_users';
         const RESOURCES_COLLECTION = 'wafu_resources';
         const CATEGORIES_COLLECTION = 'wafu_categories';
         const SETTINGS_COLLECTION = 'wafu_settings';
 
-        // 應用程式狀態管理
+        // 可愛風主題色彩陣列，用於隨機指派標籤顏色
+        const cuteColorPalette = [
+            'bg-[#CD7B71] text-white',      // 紅
+            'bg-[#EFD28D] text-[#5C4A3D]',  // 黃
+            'bg-[#99B44F] text-white',      // 綠
+            'bg-[#86A7C1] text-white',      // 藍
+            'bg-[#F1CBBE] text-[#5C4A3D]'   // 粉
+        ];
+
         window.appState = {
-            fbUser: null,        // Firebase 匿名 user
-            currentUser: null,   // 系統自訂登入的使用者資料 {id, username, role}
-            resources: [],       // 所有文件與連結
-            users: [],           // 所有系統帳號 (僅管理員需要)
-            categories: [],      // 自動收集的分類
-            managedCategories: [], // 管理員設定的分類庫
-            systemName: "雲端文庫", // 系統預設名稱
-            
-            // UI 狀態
+            fbUser: null,
+            currentUser: null,
+            resources: [],
+            users: [],
+            categories: [],
+            managedCategories: [],
+            systemName: "雲端文庫",
             currentPage: 1,
             itemsPerPage: 10,
             searchQuery: "",
@@ -351,122 +379,101 @@
             filterCategory: "all"
         };
 
-        // 封裝主邏輯
         window.app = {
-            
-            // 初始化
             init: async function() {
                 try {
-                    // 1. Firebase 授權 (要求規則3)
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } else {
                         await signInAnonymously(auth);
                     }
 
-                    // 2. 監聽授權狀態
                     onAuthStateChanged(auth, (user) => {
                         if (user) {
                             window.appState.fbUser = user;
                             this.fetchData();
-                        } else {
-                            console.error("無法取得 Firebase 授權");
                         }
                     });
                 } catch (error) {
                     console.error("初始化失敗:", error);
-                    this.showToast("系統初始化失敗，請重新整理", "error");
                 }
             },
 
-            // 讀取資料
             fetchData: function() {
                 const user = window.appState.fbUser;
                 if (!user) return;
 
-                // 監聽資源資料 (要求規則2: 無複雜查詢，全部抓取後於前端處理)
                 const resRef = collection(db, 'artifacts', appId, 'public', 'data', RESOURCES_COLLECTION);
                 onSnapshot(resRef, (snapshot) => {
                     window.appState.resources = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     this.extractCategories();
                     this.renderResources();
-                }, (error) => {
-                    console.error("讀取資源失敗:", error);
                 });
 
-                // 監聽分類資料
                 const catRef = collection(db, 'artifacts', appId, 'public', 'data', CATEGORIES_COLLECTION);
                 onSnapshot(catRef, (snapshot) => {
                     window.appState.managedCategories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     
-                    // 如果分類是空的且為管理員，自動寫入預設分類
                     if (window.appState.managedCategories.length === 0 && window.appState.currentUser?.role === 'admin') {
                         this.seedDefaultCategories();
                     }
-                    
                     this.extractCategories();
                     this.renderCategoryManager();
-                }, (error) => {
-                    console.error("讀取分類失敗:", error);
                 });
 
-                // 監聽系統設定 (系統名稱)
                 const sysRef = doc(db, 'artifacts', appId, 'public', 'data', SETTINGS_COLLECTION, 'global');
                 onSnapshot(sysRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        if (data.systemName) {
-                            window.appState.systemName = data.systemName;
-                            this.updateSystemNameUI();
-                        }
-                    } else {
-                        // 初始狀態確保 UI 顯示預設值
-                        this.updateSystemNameUI();
+                    if (docSnap.exists() && docSnap.data().systemName) {
+                        window.appState.systemName = docSnap.data().systemName;
                     }
-                }, (error) => {
-                    console.error("讀取系統設定失敗:", error);
+                    this.updateSystemNameUI();
                 });
 
-                // 監聽帳號資料 (用以驗證登入與管理)
                 const usersRef = collection(db, 'artifacts', appId, 'public', 'data', USERS_COLLECTION);
                 onSnapshot(usersRef, (snapshot) => {
                     window.appState.users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     
-                    // 檢查系統是否為全新無帳號狀態
                     const initNotice = document.getElementById('initAdminNotice');
                     const loginBtn = document.getElementById('submitLoginBtn');
                     
                     if (window.appState.users.length === 0) {
                         if(initNotice) initNotice.classList.remove('hidden');
-                        if(loginBtn) {
-                            loginBtn.innerText = "建立並登入管理員";
-                            loginBtn.classList.replace('bg-[var(--ai)]', 'bg-[var(--matcha)]');
-                        }
+                        if(loginBtn) loginBtn.innerText = "建立並登入管理員";
                     } else {
                         if(initNotice) initNotice.classList.add('hidden');
-                        if(loginBtn) {
-                            loginBtn.innerText = "登入";
-                            loginBtn.classList.replace('bg-[var(--matcha)]', 'bg-[var(--ai)]');
-                        }
+                        if(loginBtn) loginBtn.innerText = "進入";
                     }
 
-                    // 如果已登入，更新使用者狀態 (可能被管理員刪除或改權限)
                     if (window.appState.currentUser) {
                         const updatedUser = window.appState.users.find(u => u.id === window.appState.currentUser.id);
-                        if (!updatedUser) {
-                            this.logout(); // 帳號被刪除
-                        } else {
+                        if (!updatedUser) this.logout();
+                        else {
                             window.appState.currentUser = updatedUser;
                             this.updateUI();
                             if(updatedUser.role === 'admin') this.renderUsersTable();
                         }
                     }
-                }, (error) => {
-                    console.error("讀取帳號失敗:", error);
                 });
             },
 
-            // ================= 登入與帳號管理 =================
+            // 回首頁並清除搜尋與過濾條件
+            goHome: function() {
+                // UI 清空
+                document.getElementById('searchInput').value = '';
+                document.getElementById('typeFilter').value = 'all';
+                document.getElementById('categoryFilter').value = 'all';
+                
+                // 狀態清空
+                window.appState.searchQuery = '';
+                window.appState.filterType = 'all';
+                window.appState.filterCategory = 'all';
+                window.appState.currentPage = 1;
+                
+                // 重新渲染並捲動到最上面
+                this.renderResources();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                this.showToast("已返回首頁");
+            },
 
             processLogin: async function() {
                 const user = window.appState.fbUser;
@@ -478,25 +485,17 @@
 
                 if (!usernameInput || !passwordInput) {
                     errorDiv.innerText = "請輸入帳號與密碼";
-                    errorDiv.classList.remove('hidden');
-                    return;
+                    errorDiv.classList.remove('hidden'); return;
                 }
 
-                // 系統無帳號 -> 初始化管理員
                 if (window.appState.users.length === 0) {
                     try {
-                        const usersRef = collection(db, 'artifacts', appId, 'public', 'data', USERS_COLLECTION);
-                        const newUser = {
-                            username: usernameInput,
-                            password: passwordInput, // 註：前端加密意義不大，此為沙盒展示故明碼
-                            role: 'admin',
-                            createdAt: Date.now()
-                        };
-                        const docRef = await addDoc(usersRef, newUser);
-                        
-                        window.appState.currentUser = { id: docRef.id, ...newUser };
+                        const docRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', USERS_COLLECTION), {
+                            username: usernameInput, password: passwordInput, role: 'admin', createdAt: Date.now()
+                        });
+                        window.appState.currentUser = { id: docRef.id, username: usernameInput, role: 'admin' };
                         this.finishLogin();
-                        this.showToast("管理員帳號建立成功");
+                        this.showToast("管理員建立成功");
                     } catch (e) {
                         errorDiv.innerText = "建立失敗：" + e.message;
                         errorDiv.classList.remove('hidden');
@@ -504,9 +503,7 @@
                     return;
                 }
 
-                // 一般登入驗證
                 const matchedUser = window.appState.users.find(u => u.username === usernameInput && u.password === passwordInput);
-                
                 if (matchedUser) {
                     window.appState.currentUser = matchedUser;
                     this.finishLogin();
@@ -539,120 +536,69 @@
                 const accountManagerBtn = document.getElementById('accountManagerBtn');
 
                 if (curUser) {
-                    // 已登入
                     loginBtn.classList.add('hidden');
                     userInfo.classList.remove('hidden');
                     document.getElementById('currentUserName').innerText = curUser.username;
-                    document.getElementById('currentUserRoleLabel').innerText = curUser.role === 'admin' ? '管理員' : '協作者';
-                    
                     adminToolbar.classList.remove('hidden');
                     
                     if (curUser.role === 'admin') {
                         accountManagerBtn.classList.remove('hidden');
                         this.renderUsersTable();
-                        this.renderCategoryManager(); // 確保渲染分類
+                        this.renderCategoryManager();
                     } else {
                         accountManagerBtn.classList.add('hidden');
                     }
                 } else {
-                    // 未登入 (訪客)
                     loginBtn.classList.remove('hidden');
                     userInfo.classList.add('hidden');
                     adminToolbar.classList.add('hidden');
                     this.closeModal('settingsModal');
                 }
-                
-                // 重新渲染清單以更新卡片上的編輯/刪除按鈕
                 this.renderResources();
             },
 
-            // ================= 帳號 CRUD (Admin) =================
-            
             addNewAccountFromTable: async function() {
                 if (!window.appState.fbUser || window.appState.currentUser?.role !== 'admin') return;
-                
                 const username = document.getElementById('newAccUsername').value.trim();
                 const password = document.getElementById('newAccPassword').value.trim();
                 const role = document.getElementById('newAccRole').value;
 
-                if (!username || !password) {
-                    this.showToast("新帳號需填寫完整", "error"); return;
-                }
-                if (window.appState.users.some(u => u.username === username)) {
-                    this.showToast("帳號名稱已存在", "error"); return;
-                }
+                if (!username || !password) { this.showToast("資料需填寫完整", "error"); return; }
+                if (window.appState.users.some(u => u.username === username)) { this.showToast("帳號已存在", "error"); return; }
                 
-                try {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', USERS_COLLECTION), {
-                        username, password, role, createdAt: Date.now()
-                    });
-                    this.showToast("帳號已新增");
-                } catch(e) {
-                    console.error(e);
-                    this.showToast("新增失敗", "error");
-                }
-            },
-
-            saveAccount: async function() {
-                // 已被 addNewAccountFromTable 取代，保留相容性
-            },
-
-            editAccount: function(id) {
-                // 因配合圖片視覺已移除獨立表單編輯，簡化為刪除後重建
-                this.showToast("請刪除後重新建立帳號", "error");
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', USERS_COLLECTION), {
+                    username, password, role, createdAt: Date.now()
+                });
+                this.showToast("帳號已新增");
             },
 
             deleteAccount: async function(id) {
                 if (!window.appState.fbUser || window.appState.currentUser?.role !== 'admin') return;
-                if (id === window.appState.currentUser.id) {
-                    this.showToast("無法刪除自己的帳號", "error"); return;
-                }
+                if (id === window.appState.currentUser.id) { this.showToast("無法刪除自己", "error"); return; }
                 
                 if (window.confirm("確定要刪除此帳號嗎？")) {
-                    try {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', USERS_COLLECTION, id));
-                        this.showToast("帳號已刪除");
-                    } catch(e) {
-                        console.error(e);
-                        this.showToast("刪除失敗", "error");
-                    }
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', USERS_COLLECTION, id));
+                    this.showToast("帳號已刪除");
                 }
             },
 
-            clearAccountForm: function() {},
-
-            // ================= 系統設定 (Admin) =================
-            
             saveSystemName: async function() {
                 if (!window.appState.fbUser || window.appState.currentUser?.role !== 'admin') return;
-                
                 const newName = document.getElementById('sysNameInput').value.trim();
-                if (!newName) {
-                    this.showToast("系統名稱不能為空", "error"); return;
-                }
+                if (!newName) return;
                 
-                try {
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', SETTINGS_COLLECTION, 'global'), {
-                        systemName: newName,
-                        updatedAt: Date.now()
-                    }, { merge: true });
-                    this.showToast("系統名稱已更新");
-                } catch(e) {
-                    console.error(e);
-                    this.showToast("更新名稱失敗", "error");
-                }
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', SETTINGS_COLLECTION, 'global'), {
+                    systemName: newName, updatedAt: Date.now()
+                }, { merge: true });
+                this.showToast("網站名稱已更新");
             },
 
             updateSystemNameUI: function() {
                 const name = window.appState.systemName;
-                const headerTitle = document.getElementById('systemHeaderTitle');
-                const pageTitle = document.getElementById('systemPageTitle');
-                const footerTitle = document.getElementById('systemFooterTitle');
+                document.getElementById('systemHeaderTitle').innerText = name;
+                document.getElementById('systemPageTitle').innerText = `${name} - 雲端文庫`;
+                document.getElementById('systemFooterTitle').innerHTML = `&copy; ${new Date().getFullYear()} ${name}. All rights reserved.`;
                 const sysNameInput = document.getElementById('sysNameInput');
-
-                if (headerTitle) headerTitle.innerText = name;
-                if (pageTitle) pageTitle.innerText = `${name} - 文件與網站分享系統`;
-                if (footerTitle) footerTitle.innerHTML = `&copy; ${new Date().getFullYear()} ${name}. All rights reserved.`;
                 if (sysNameInput) sysNameInput.value = name;
             },
 
@@ -661,114 +607,77 @@
                 if(!tbody) return;
                 tbody.innerHTML = '';
                 
-                // 渲染現有用戶
                 window.appState.users.forEach(u => {
                     const isCurrentUser = u.id === window.appState.currentUser?.id;
                     const tr = document.createElement('tr');
-                    tr.className = 'border-b hover:bg-gray-50';
+                    tr.className = 'border-b border-[#F4E6D9] hover:bg-gray-50';
                     tr.innerHTML = `
-                        <td class="p-3 text-sm font-medium text-gray-800">${u.username}</td>
-                        <td class="p-3 text-sm text-blue-300">${u.password}</td>
+                        <td class="p-3 text-sm font-bold">${u.username}</td>
+                        <td class="p-3 text-sm text-gray-400 font-mono">${u.password}</td>
                         <td class="p-3 text-sm">
-                            <span class="bg-gray-50 border border-gray-200 text-gray-600 px-3 py-1 rounded-sm text-xs font-medium">
+                            <span class="bg-[#F4E6D9] text-[var(--text-main)] px-3 py-1 rounded-full text-xs font-bold">
                                 ${u.role === 'admin' ? '管理員' : '協作者'}
                             </span>
                         </td>
                         <td class="p-3 text-sm text-center">
                             ${isCurrentUser 
-                                ? `<span class="bg-gray-50 text-gray-500 border px-3 py-1 rounded-sm text-xs">目前登入</span>`
-                                : `<button onclick="app.deleteAccount('${u.id}')" class="text-gray-400 hover:text-red-500 transition" title="刪除"><i class="fa-solid fa-times text-lg"></i></button>`
+                                ? `<span class="text-gray-400 text-xs font-bold">目前登入</span>`
+                                : `<button onclick="app.deleteAccount('${u.id}')" class="text-gray-300 hover:text-[var(--color-red)] transition text-lg"><i class="fa-solid fa-circle-minus"></i></button>`
                             }
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
 
-                // 新增用戶的輸入列 (放在最底端)
                 const trNew = document.createElement('tr');
-                trNew.className = 'bg-gray-50 border-t border-gray-300';
                 trNew.innerHTML = `
-                    <td class="p-2"><input type="text" id="newAccUsername" placeholder="輸入新帳號" class="w-full p-1.5 border border-gray-300 rounded-sm text-sm focus:outline-none focus:border-[var(--ai)]"></td>
-                    <td class="p-2"><input type="password" id="newAccPassword" placeholder="輸入密碼" class="w-full p-1.5 border border-gray-300 rounded-sm text-sm focus:outline-none focus:border-[var(--ai)]"></td>
+                    <td class="p-2"><input type="text" id="newAccUsername" placeholder="新帳號" class="cute-input w-full px-3 py-1.5 text-sm"></td>
+                    <td class="p-2"><input type="password" id="newAccPassword" placeholder="密碼" class="cute-input w-full px-3 py-1.5 text-sm"></td>
                     <td class="p-2">
-                        <select id="newAccRole" class="w-full p-1.5 border border-gray-300 rounded-sm text-sm focus:outline-none">
+                        <select id="newAccRole" class="cute-input w-full px-3 py-1.5 text-sm">
                             <option value="collaborator">協作者</option>
                             <option value="admin">管理員</option>
                         </select>
                     </td>
                     <td class="p-2 text-center">
-                        <button onclick="app.addNewAccountFromTable()" class="bg-white border border-gray-300 text-gray-700 px-3 py-1 rounded-sm text-xs hover:bg-gray-100 transition shadow-sm">新增</button>
+                        <button onclick="app.addNewAccountFromTable()" class="bg-[var(--color-blue)] text-white px-4 py-1.5 rounded-full text-xs font-bold hover:brightness-105 transition">新增</button>
                     </td>
                 `;
                 tbody.appendChild(trNew);
             },
 
-            // ================= 分類管理 (Admin) =================
-            
             seedDefaultCategories: async function() {
                 const defaults = [
-                    { name: '其他', color: 'bg-[#EAECEF] text-gray-700 border-gray-200' },
-                    { name: '數學', color: 'bg-[#FBE4E7] text-rose-800 border-rose-200' },
-                    { name: '國語', color: 'bg-[#E2EFE3] text-emerald-800 border-emerald-200' },
-                    { name: '綠寶地', color: 'bg-[#FDF3D1] text-amber-800 border-amber-200' }
+                    { name: '領導力', color: cuteColorPalette[0] }, // 紅
+                    { name: '團隊', color: cuteColorPalette[2] },   // 綠
+                    { name: '創新', color: cuteColorPalette[1] },   // 黃
+                    { name: '多元', color: cuteColorPalette[3] },   // 藍
+                    { name: '品質', color: cuteColorPalette[4] }    // 粉
                 ];
-                
                 const colRef = collection(db, 'artifacts', appId, 'public', 'data', CATEGORIES_COLLECTION);
-                for (const cat of defaults) {
-                    await addDoc(colRef, cat);
-                }
+                for (const cat of defaults) await addDoc(colRef, cat);
             },
 
             saveManagedCategory: async function() {
                 if (!window.appState.fbUser || window.appState.currentUser?.role !== 'admin') return;
-                
                 const input = document.getElementById('newCategoryInput');
                 const name = input.value.trim();
+                if (!name) return;
+                if (window.appState.managedCategories.some(c => c.name === name)) { this.showToast("分類已存在", "error"); return; }
                 
-                if (!name) {
-                    this.showToast("請輸入分類名稱", "error"); return;
-                }
-                
-                if (window.appState.managedCategories.some(c => c.name === name)) {
-                    this.showToast("此分類名稱已存在", "error"); return;
-                }
-                
-                // 隨機指派一個符合圖片風格的柔和標籤顏色
-                const colorPalette = [
-                    'bg-[#EAECEF] text-gray-700 border-gray-200', 
-                    'bg-[#FBE4E7] text-rose-800 border-rose-200', 
-                    'bg-[#E2EFE3] text-emerald-800 border-emerald-200', 
-                    'bg-[#FDF3D1] text-amber-800 border-amber-200',
-                    'bg-[#E2F0FD] text-blue-800 border-blue-200', 
-                    'bg-[#F2E5F8] text-purple-800 border-purple-200'
-                ];
-                const randomColor = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-                
-                try {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', CATEGORIES_COLLECTION), {
-                        name: name,
-                        color: randomColor,
-                        createdAt: Date.now()
-                    });
-                    input.value = '';
-                    this.showToast("分類已新增");
-                } catch(e) {
-                    console.error(e);
-                    this.showToast("新增分類失敗", "error");
-                }
+                const randomColor = cuteColorPalette[Math.floor(Math.random() * cuteColorPalette.length)];
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', CATEGORIES_COLLECTION), {
+                    name, color: randomColor, createdAt: Date.now()
+                });
+                input.value = '';
+                this.showToast("分類已建立");
             },
 
             deleteManagedCategory: async function(id) {
                 if (!window.appState.fbUser || window.appState.currentUser?.role !== 'admin') return;
-                
                 if (window.confirm("確定要刪除此分類嗎？")) {
-                    try {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', CATEGORIES_COLLECTION, id));
-                        this.showToast("分類已刪除");
-                    } catch(e) {
-                        console.error(e);
-                        this.showToast("刪除失敗", "error");
-                    }
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', CATEGORIES_COLLECTION, id));
+                    this.showToast("分類已移除");
                 }
             },
             
@@ -776,49 +685,35 @@
                 const container = document.getElementById('categoryPillList');
                 if (!container) return;
                 container.innerHTML = '';
-                
                 window.appState.managedCategories.sort((a,b) => a.createdAt - b.createdAt).forEach(cat => {
                     const div = document.createElement('div');
-                    div.className = `${cat.color} px-3 py-1.5 rounded-sm flex items-center gap-2 text-sm border shadow-sm`;
+                    div.className = `${cat.color} px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-bold shadow-sm`;
                     div.innerHTML = `
-                        <span class="font-medium">${cat.name}</span>
-                        <button onclick="app.deleteManagedCategory('${cat.id}')" class="text-current opacity-60 hover:opacity-100 transition font-bold" title="刪除">
-                            &times;
-                        </button>
+                        <span>${cat.name}</span>
+                        <button onclick="app.deleteManagedCategory('${cat.id}')" class="opacity-60 hover:opacity-100 transition"><i class="fa-solid fa-times"></i></button>
                     `;
                     container.appendChild(div);
                 });
             },
 
-            // ================= 資源 CRUD =================
-
             extractCategories: function() {
-                // 將後端管理的標籤提取出來
                 window.appState.categories = window.appState.managedCategories.map(c => c.name).sort();
                 
-                // 更新主畫面的篩選下拉選單
                 const filterSelect = document.getElementById('categoryFilter');
                 const filterCurrentValue = filterSelect.value;
                 filterSelect.innerHTML = '<option value="all">所有分類</option>';
                 
-                // 更新新增/編輯的下拉選單
                 const resCategorySelect = document.getElementById('resCategory');
-                let resCurrentValue = '';
-                if(resCategorySelect) resCurrentValue = resCategorySelect.value;
-                if(resCategorySelect) resCategorySelect.innerHTML = '<option value="">請選擇分類</option>';
+                let resCurrentValue = resCategorySelect ? resCategorySelect.value : '';
+                if(resCategorySelect) resCategorySelect.innerHTML = '<option value="">請選擇...</option>';
 
                 window.appState.categories.forEach(c => {
                     filterSelect.innerHTML += `<option value="${c}">${c}</option>`;
                     if(resCategorySelect) resCategorySelect.innerHTML += `<option value="${c}">${c}</option>`;
                 });
                 
-                // 恢復原本的選擇狀態
-                if (window.appState.categories.includes(filterCurrentValue)) {
-                    filterSelect.value = filterCurrentValue;
-                }
-                if (resCategorySelect && window.appState.categories.includes(resCurrentValue)) {
-                    resCategorySelect.value = resCurrentValue;
-                }
+                if (window.appState.categories.includes(filterCurrentValue)) filterSelect.value = filterCurrentValue;
+                if (resCategorySelect && window.appState.categories.includes(resCurrentValue)) resCategorySelect.value = resCurrentValue;
             },
 
             handleSearch: function() {
@@ -843,110 +738,86 @@
             renderResources: function() {
                 const container = document.getElementById('resourceContainer');
                 const pagination = document.getElementById('pagination');
-                
                 let filtered = window.appState.resources;
 
-                // 1. 關鍵字搜尋
                 if (window.appState.searchQuery) {
                     const q = window.appState.searchQuery;
-                    filtered = filtered.filter(r => 
-                        (r.title && r.title.toLowerCase().includes(q)) || 
-                        (r.description && r.description.toLowerCase().includes(q)) ||
-                        (r.category && r.category.toLowerCase().includes(q))
-                    );
+                    filtered = filtered.filter(r => (r.title && r.title.toLowerCase().includes(q)) || (r.description && r.description.toLowerCase().includes(q)) || (r.category && r.category.toLowerCase().includes(q)));
                 }
+                if (window.appState.filterType !== 'all') filtered = filtered.filter(r => r.type === window.appState.filterType);
+                if (window.appState.filterCategory !== 'all') filtered = filtered.filter(r => r.category === window.appState.filterCategory);
 
-                // 2. 類型過濾
-                if (window.appState.filterType !== 'all') {
-                    filtered = filtered.filter(r => r.type === window.appState.filterType);
-                }
-
-                // 3. 分類過濾
-                if (window.appState.filterCategory !== 'all') {
-                    filtered = filtered.filter(r => r.category === window.appState.filterCategory);
-                }
-
-                // 4. 排序: 最新在前面
                 filtered.sort((a, b) => b.createdAt - a.createdAt);
 
-                // 5. 分頁
                 const totalItems = filtered.length;
                 const totalPages = Math.ceil(totalItems / window.appState.itemsPerPage) || 1;
-                
-                // 確保當前頁數不超出範圍
                 if (window.appState.currentPage > totalPages) window.appState.currentPage = totalPages;
                 
                 const startIndex = (window.appState.currentPage - 1) * window.appState.itemsPerPage;
                 const paginated = filtered.slice(startIndex, startIndex + window.appState.itemsPerPage);
 
-                // 渲染卡片
                 container.innerHTML = '';
                 
                 if (paginated.length === 0) {
                     container.innerHTML = `
-                        <div class="col-span-full py-16 text-center text-gray-500 bg-white rounded-md border border-dashed border-gray-300">
-                            <i class="fa-solid fa-folder-open text-4xl mb-3 text-gray-300"></i>
-                            <p>沒有找到符合的文件或網站</p>
+                        <div class="col-span-full py-20 text-center text-[var(--text-main)] opacity-50 bg-white rounded-3xl border-2 border-dashed border-[#E5D5C5]">
+                            <i class="fa-solid fa-ghost text-5xl mb-4"></i>
+                            <p class="font-bold text-lg">這裡空空的，沒有找到相關內容呢</p>
                         </div>
                     `;
                 } else {
                     paginated.forEach(item => {
                         const isDoc = item.type === 'document';
-                        const iconClass = isDoc ? 'fa-file-alt text-[var(--ai)]' : 'fa-link text-[var(--matcha)]';
+                        const iconClass = isDoc ? 'fa-file-alt text-[var(--color-blue)]' : 'fa-link text-[var(--color-green)]';
                         const typeLabel = isDoc ? '文件' : '網站';
                         
-                        // 權限判斷
-                        const curUser = window.appState.currentUser;
+                        // 取得分類顏色 (若無對應則用預設灰色)
+                        const matchedCat = window.appState.managedCategories.find(c => c.name === item.category);
+                        const catColorClass = matchedCat ? matchedCat.color : 'bg-gray-200 text-gray-600';
+
                         let canEdit = false;
-                        if (curUser) {
-                            if (curUser.role === 'admin') canEdit = true;
-                            if (curUser.role === 'collaborator' && item.authorId === curUser.id) canEdit = true;
-                        }
+                        if (window.appState.currentUser && (window.appState.currentUser.role === 'admin' || item.authorId === window.appState.currentUser.id)) canEdit = true;
 
                         const dateStr = new Date(item.createdAt).toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
 
                         const card = document.createElement('div');
-                        card.className = "bg-white p-5 rounded-md border border-gray-200 card-hover flex flex-col h-full shadow-sm relative overflow-hidden";
-                        
-                        // 左側顏色條
-                        const barColor = isDoc ? 'bg-[var(--ai)]' : 'bg-[var(--matcha)]';
+                        card.className = "bg-white p-6 rounded-[1.5rem] border-2 border-[#F4E6D9] card-hover flex flex-col h-full";
                         
                         card.innerHTML = `
-                            <div class="absolute left-0 top-0 bottom-0 w-1 ${barColor} opacity-70"></div>
-                            <div class="flex justify-between items-start mb-3">
-                                <span class="text-xs font-medium px-2 py-1 rounded bg-gray-100 text-gray-600 border border-gray-200">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="${catColorClass} text-xs font-bold px-3 py-1 rounded-full">
                                     ${item.category || '未分類'}
                                 </span>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs text-gray-400" title="觀看次數"><i class="fa-regular fa-eye"></i> ${item.views || 0}</span>
-                                    <span class="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded border"><i class="fa-solid ${iconClass} mr-1"></i>${typeLabel}</span>
+                                    <span class="text-xs text-gray-400 font-bold bg-gray-50 px-2 py-1 rounded-full"><i class="fa-regular fa-eye mr-1"></i>${item.views || 0}</span>
+                                    <span class="text-xs text-gray-500 font-bold bg-[#FDF8F3] px-2 py-1 rounded-full border border-[#F4E6D9]"><i class="fa-solid ${iconClass} mr-1"></i>${typeLabel}</span>
                                 </div>
                             </div>
                             
-                            <h3 class="text-lg font-bold mb-2 text-[var(--sumi)] line-clamp-2 leading-snug">
-                                <a href="#" onclick="app.recordViewAndOpen('${item.id}', '${item.url}'); return false;" class="hover:text-[var(--matcha)] transition">
+                            <h3 class="text-xl font-bold mb-2 text-[var(--text-main)] line-clamp-2 leading-snug rounded-font">
+                                <a href="#" onclick="app.recordViewAndOpen('${item.id}', '${item.url}'); return false;" class="hover:text-[var(--color-red)] transition">
                                     ${item.title}
                                 </a>
                             </h3>
                             
-                            <p class="text-sm text-gray-600 mb-4 flex-grow line-clamp-3 leading-relaxed">
+                            <p class="text-sm text-gray-600 mb-5 flex-grow line-clamp-3 leading-relaxed">
                                 ${item.description || ''}
                             </p>
                             
-                            <div class="mt-auto pt-4 border-t border-gray-100 flex justify-between items-center text-xs text-gray-500">
+                            <div class="mt-auto pt-4 border-t-2 border-dashed border-[#F4E6D9] flex justify-between items-center text-xs text-gray-400 font-bold">
                                 <div>
-                                    <i class="fa-regular fa-calendar-alt"></i> ${dateStr} <br>
-                                    <span class="mt-1 inline-block"><i class="fa-solid fa-pen-nib"></i> ${item.authorName}</span>
+                                    <i class="fa-solid fa-leaf mr-1"></i> ${dateStr} <br>
+                                    <span class="mt-1.5 inline-block"><i class="fa-solid fa-pen-nib mr-1"></i> ${item.authorName}</span>
                                 </div>
                                 
                                 ${canEdit ? `
                                     <div class="flex gap-2">
-                                        <button onclick="app.editResource('${item.id}')" class="p-1.5 text-blue-500 hover:bg-blue-50 rounded transition" title="編輯"><i class="fa-solid fa-edit"></i></button>
-                                        <button onclick="app.deleteResource('${item.id}')" class="p-1.5 text-red-500 hover:bg-red-50 rounded transition" title="刪除"><i class="fa-solid fa-trash-alt"></i></button>
+                                        <button onclick="app.editResource('${item.id}')" class="w-8 h-8 flex items-center justify-center bg-[var(--color-yellow)] text-[var(--text-main)] hover:brightness-105 rounded-full transition shadow-sm" title="編輯"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                        <button onclick="app.deleteResource('${item.id}')" class="w-8 h-8 flex items-center justify-center bg-[var(--color-red)] text-white hover:brightness-105 rounded-full transition shadow-sm" title="刪除"><i class="fa-solid fa-trash text-[10px]"></i></button>
                                     </div>
                                 ` : `
-                                    <a href="#" onclick="app.recordViewAndOpen('${item.id}', '${item.url}'); return false;" class="text-[var(--ai)] font-medium hover:underline bg-[var(--washi)] px-3 py-1.5 rounded-sm transition">
-                                        前往查看 <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                    <a href="#" onclick="app.recordViewAndOpen('${item.id}', '${item.url}'); return false;" class="text-[var(--text-main)] font-bold hover:bg-[var(--color-yellow)] bg-[#F4E6D9] px-4 py-2 rounded-full transition">
+                                        前往 <i class="fa-solid fa-chevron-right ml-1 text-[10px]"></i>
                                     </a>
                                 `}
                             </div>
@@ -955,85 +826,59 @@
                     });
                 }
 
-                // 渲染分頁按鈕
                 pagination.innerHTML = '';
                 if (totalPages > 1) {
-                    // 上一頁
-                    pagination.innerHTML += `<button onclick="app.changePage(${window.appState.currentPage - 1})" class="px-3 py-1 border rounded-sm ${window.appState.currentPage === 1 ? 'text-gray-300 border-gray-200 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-50'}" ${window.appState.currentPage === 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left text-xs"></i></button>`;
+                    const btnClass = "w-9 h-9 flex items-center justify-center rounded-full border-2 font-bold transition";
+                    const inactiveClass = "text-gray-300 border-gray-200 cursor-not-allowed";
+                    const normalClass = "text-[var(--text-main)] border-[#F4E6D9] hover:bg-[#F4E6D9] bg-white";
+                    const activeClass = "bg-[var(--color-green)] text-white border-[var(--color-green)]";
+
+                    pagination.innerHTML += `<button onclick="app.changePage(${window.appState.currentPage - 1})" class="${btnClass} ${window.appState.currentPage === 1 ? inactiveClass : normalClass}" ${window.appState.currentPage === 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left text-xs"></i></button>`;
                     
-                    // 頁碼
                     for (let i = 1; i <= totalPages; i++) {
                         if (i === 1 || i === totalPages || (i >= window.appState.currentPage - 1 && i <= window.appState.currentPage + 1)) {
-                            const activeClass = i === window.appState.currentPage ? 'bg-[var(--ai)] text-white border-[var(--ai)]' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50';
-                            pagination.innerHTML += `<button onclick="app.changePage(${i})" class="px-3 py-1 border rounded-sm ${activeClass}">${i}</button>`;
+                            pagination.innerHTML += `<button onclick="app.changePage(${i})" class="${btnClass} ${i === window.appState.currentPage ? activeClass : normalClass}">${i}</button>`;
                         } else if (i === window.appState.currentPage - 2 || i === window.appState.currentPage + 2) {
-                            pagination.innerHTML += `<span class="px-2 text-gray-400">...</span>`;
+                            pagination.innerHTML += `<span class="px-1 text-gray-400">...</span>`;
                         }
                     }
 
-                    // 下一頁
-                    pagination.innerHTML += `<button onclick="app.changePage(${window.appState.currentPage + 1})" class="px-3 py-1 border rounded-sm ${window.appState.currentPage === totalPages ? 'text-gray-300 border-gray-200 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-50'}" ${window.appState.currentPage === totalPages ? 'disabled' : ''}><i class="fa-solid fa-chevron-right text-xs"></i></button>`;
+                    pagination.innerHTML += `<button onclick="app.changePage(${window.appState.currentPage + 1})" class="${btnClass} ${window.appState.currentPage === totalPages ? inactiveClass : normalClass}" ${window.appState.currentPage === totalPages ? 'disabled' : ''}><i class="fa-solid fa-chevron-right text-xs"></i></button>`;
                 }
             },
 
-            // 儲存資源 (新增/修改)
             saveResource: async function() {
                 const curUser = window.appState.currentUser;
-                const fbUser = window.appState.fbUser;
-                if (!fbUser || !curUser) {
-                    this.showToast("權限不足，請先登入", "error"); return;
-                }
+                if (!window.appState.fbUser || !curUser) return;
 
                 const id = document.getElementById('resId').value;
                 const type = document.querySelector('input[name="resType"]:checked').value;
                 const title = document.getElementById('resTitle').value.trim();
-                const url = document.getElementById('resUrl').value.trim();
+                let url = document.getElementById('resUrl').value.trim();
                 const category = document.getElementById('resCategory').value.trim();
                 const description = document.getElementById('resDesc').value.trim();
 
-                if (!title || !url || !category) {
-                    this.showToast("請填寫所有必填欄位 (*)", "error"); return;
-                }
+                if (!title || !url || !category) { this.showToast("資料需填寫完整 (*)", "error"); return; }
+                if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
-                // 簡單的 URL 格式修復
-                let finalUrl = url;
-                if (!/^https?:\/\//i.test(finalUrl)) {
-                    finalUrl = 'https://' + finalUrl;
-                }
-
-                const resData = {
-                    type,
-                    title,
-                    url: finalUrl,
-                    category,
-                    description,
-                    updatedAt: Date.now()
-                };
+                const resData = { type, title, url, category, description, updatedAt: Date.now() };
 
                 try {
-                    const colRef = collection(db, 'artifacts', appId, 'public', 'data', RESOURCES_COLLECTION);
-                    
                     if (id) {
-                        // 檢查權限 (前端檢查，後端因為是 public data 任何人只要登入FB就能寫，這裡是邏輯防護)
                         const existing = window.appState.resources.find(r => r.id === id);
-                        if (curUser.role !== 'admin' && existing.authorId !== curUser.id) {
-                            this.showToast("您只能修改自己建立的項目", "error"); return;
-                        }
+                        if (curUser.role !== 'admin' && existing.authorId !== curUser.id) { this.showToast("無權限修改", "error"); return; }
                         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', RESOURCES_COLLECTION, id), resData);
-                        this.showToast("資料已更新");
+                        this.showToast("更新成功");
                     } else {
                         resData.authorId = curUser.id;
                         resData.authorName = curUser.username;
                         resData.createdAt = Date.now();
                         resData.views = 0;
-                        await addDoc(colRef, resData);
-                        this.showToast("新增成功");
+                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', RESOURCES_COLLECTION), resData);
+                        this.showToast("建立成功");
                     }
                     this.closeModal('resourceModal');
-                } catch(e) {
-                    console.error(e);
-                    this.showToast("儲存失敗", "error");
-                }
+                } catch(e) { this.showToast("儲存失敗", "error"); }
             },
 
             editResource: function(id) {
@@ -1047,60 +892,38 @@
                 document.getElementById('resCategory').value = item.category;
                 document.getElementById('resDesc').value = item.description || '';
                 
-                document.getElementById('resourceModalTitle').innerText = '編輯文件 / 網站';
+                document.getElementById('resourceModalTitle').innerText = '編輯內容';
                 this.openModal('resourceModal');
             },
 
             deleteResource: async function(id) {
                 const curUser = window.appState.currentUser;
                 if (!curUser) return;
-                
                 const item = window.appState.resources.find(r => r.id === id);
-                if (curUser.role !== 'admin' && item.authorId !== curUser.id) {
-                    this.showToast("您只能刪除自己建立的項目", "error"); return;
-                }
-
-                if (window.confirm(`確定要刪除「${item.title}」嗎？`)) {
-                    try {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', RESOURCES_COLLECTION, id));
-                        this.showToast("已刪除");
-                    } catch(e) {
-                        console.error(e);
-                        this.showToast("刪除失敗", "error");
-                    }
-                }
-            },
-
-            // 記錄觀看次數並開啟連結
-            recordViewAndOpen: async function(id, url) {
-                // 開啟新分頁
-                window.open(url, '_blank', 'noopener,noreferrer');
                 
-                // 只有在取得匿名 fbUser 的情況下才能寫入 Firestore
-                if (window.appState.fbUser) {
-                    try {
-                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', RESOURCES_COLLECTION, id);
-                        const item = window.appState.resources.find(r => r.id === id);
-                        if (item) {
-                            await updateDoc(docRef, { views: (item.views || 0) + 1 });
-                        }
-                    } catch (e) {
-                        console.error("更新觀看次數失敗", e);
-                    }
+                if (curUser.role !== 'admin' && item.authorId !== curUser.id) return;
+                if (window.confirm(`確定要刪除「${item.title}」嗎？`)) {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', RESOURCES_COLLECTION, id));
+                    this.showToast("已刪除");
                 }
             },
 
-            // ================= 共用工具 =================
+            recordViewAndOpen: async function(id, url) {
+                window.open(url, '_blank', 'noopener,noreferrer');
+                if (window.appState.fbUser) {
+                    const item = window.appState.resources.find(r => r.id === id);
+                    if (item) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', RESOURCES_COLLECTION, id), { views: (item.views || 0) + 1 });
+                }
+            },
 
             openModal: function(modalId) {
                 if (modalId === 'resourceModal' && !document.getElementById('resId').value) {
-                    // 新增模式，清空表單
                     document.getElementById('resId').value = '';
                     document.getElementById('resTitle').value = '';
                     document.getElementById('resUrl').value = '';
                     document.getElementById('resCategory').value = '';
                     document.getElementById('resDesc').value = '';
-                    document.getElementById('resourceModalTitle').innerText = '新增文件 / 網站';
+                    document.getElementById('resourceModalTitle').innerText = '新增分享';
                 }
                 document.getElementById(modalId).classList.remove('hidden');
             },
@@ -1115,24 +938,17 @@
                 document.getElementById('toastMsg').innerText = msg;
                 
                 if (type === 'error') {
-                    icon.className = 'fa-solid fa-exclamation-circle text-red-400';
+                    icon.className = 'fa-solid fa-face-frown text-[var(--color-red)] text-xl';
                 } else {
-                    icon.className = 'fa-solid fa-check-circle text-green-400';
+                    icon.className = 'fa-solid fa-face-smile text-[var(--color-yellow)] text-xl';
                 }
 
                 toast.classList.remove('translate-y-20', 'opacity-0');
-                
-                setTimeout(() => {
-                    toast.classList.add('translate-y-20', 'opacity-0');
-                }, 3000);
+                setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
             }
         };
 
-        // 啟動應用程式
-        window.addEventListener('DOMContentLoaded', () => {
-            window.app.init();
-        });
-
+        window.addEventListener('DOMContentLoaded', () => window.app.init());
     </script>
 </body>
 </html>
