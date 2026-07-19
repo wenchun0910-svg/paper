@@ -139,7 +139,6 @@
                         <option value="all">所有類型</option>
                         <option value="document">文件檔案</option>
                         <option value="link">網站連結</option>
-                        <option value="drive">雲端硬碟</option>
                     </select>
                     <select id="categoryFilter" class="cute-input px-4 py-2.5 shadow-sm cursor-pointer min-w-[120px]" onchange="app.handleFilter()">
                         <option value="all">所有分類</option>
@@ -210,18 +209,14 @@
                 
                 <div class="mb-5">
                     <label class="block text-sm font-bold text-[var(--text-main)] mb-2 ml-2">資源類型 <span class="text-[var(--color-red)]">*</span></label>
-                    <div class="flex flex-wrap gap-3">
+                    <div class="flex gap-4">
                         <label class="flex items-center cursor-pointer bg-white px-4 py-2 border-2 border-[#E5D5C5] rounded-full has-[:checked]:border-[var(--color-green)] has-[:checked]:bg-[var(--color-green)] has-[:checked]:bg-opacity-10 transition">
                             <input type="radio" name="resType" value="document" checked class="hidden"> 
-                            <i class="fa-regular fa-file-alt mr-2 text-[var(--text-main)]"></i> <span class="font-bold text-[var(--text-main)] text-sm">文件檔案</span>
+                            <i class="fa-regular fa-file-alt mr-2 text-[var(--text-main)]"></i> <span class="font-bold text-[var(--text-main)]">文件檔案</span>
                         </label>
                         <label class="flex items-center cursor-pointer bg-white px-4 py-2 border-2 border-[#E5D5C5] rounded-full has-[:checked]:border-[var(--color-green)] has-[:checked]:bg-[var(--color-green)] has-[:checked]:bg-opacity-10 transition">
                             <input type="radio" name="resType" value="link" class="hidden"> 
-                            <i class="fa-solid fa-link mr-2 text-[var(--text-main)]"></i> <span class="font-bold text-[var(--text-main)] text-sm">網站連結</span>
-                        </label>
-                        <label class="flex items-center cursor-pointer bg-white px-4 py-2 border-2 border-[#E5D5C5] rounded-full has-[:checked]:border-[var(--color-green)] has-[:checked]:bg-[var(--color-green)] has-[:checked]:bg-opacity-10 transition">
-                            <input type="radio" name="resType" value="drive" class="hidden"> 
-                            <i class="fa-brands fa-google-drive mr-2 text-[var(--text-main)]"></i> <span class="font-bold text-[var(--text-main)] text-sm">雲端硬碟</span>
+                            <i class="fa-solid fa-link mr-2 text-[var(--text-main)]"></i> <span class="font-bold text-[var(--text-main)]">網站連結</span>
                         </label>
                     </div>
                 </div>
@@ -249,9 +244,10 @@
                     <textarea id="resDesc" rows="3" class="cute-input w-full px-4 py-3 resize-none" placeholder="簡單描述內容..."></textarea>
                 </div>
 
-                <div class="flex justify-end gap-3">
+                <div class="flex justify-end gap-3 flex-wrap">
                     <button onclick="app.closeModal('resourceModal')" class="px-6 py-2.5 rounded-full font-bold text-[var(--text-main)] hover:bg-[#E5D5C5] transition">取消</button>
-                    <button onclick="app.saveResource()" class="bg-[var(--color-green)] text-white px-8 py-2.5 rounded-full font-bold hover:brightness-105 transition shadow-md">儲存</button>
+                    <button id="saveAndContinueBtn" onclick="app.saveResource(true)" class="bg-[var(--color-blue)] text-white px-6 py-2.5 rounded-full font-bold hover:brightness-105 transition shadow-md">儲存並繼續新增</button>
+                    <button onclick="app.saveResource(false)" class="bg-[var(--color-green)] text-white px-8 py-2.5 rounded-full font-bold hover:brightness-105 transition shadow-md">儲存</button>
                 </div>
             </div>
         </div>
@@ -341,7 +337,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
+      const firebaseConfig = {
   apiKey: "AIzaSyDa0NveTZKEo5mODD3XhX_9bA_bPOtcPlQ",
   authDomain: "infor-aded2.firebaseapp.com",
   projectId: "infor-aded2",
@@ -772,17 +768,17 @@
                     `;
                 } else {
                     paginated.forEach(item => {
-                        let iconClass = '';
-                        let typeLabel = '';
-                        if (item.type === 'document') {
+                        const isDoc = item.type === 'document';
+                        // 雖然沒有獨立的 drive 類型，但如果 url 包含 drive.google.com，自動顯示雲端硬碟 icon
+                        const isDriveUrl = item.url && item.url.includes('drive.google.com');
+                        let iconClass = 'fa-link text-[var(--color-green)]';
+                        let typeLabel = '網站';
+                        
+                        if (isDoc) {
                             iconClass = 'fa-file-alt text-[var(--color-blue)]';
                             typeLabel = '文件';
-                        } else if (item.type === 'drive') {
+                        } else if (isDriveUrl) {
                             iconClass = 'fa-google-drive fa-brands text-[var(--color-yellow)]';
-                            typeLabel = '雲端硬碟';
-                        } else {
-                            iconClass = 'fa-link text-[var(--color-green)]';
-                            typeLabel = '網站';
                         }
                         
                         // 取得分類顏色 (若無對應則用預設灰色)
@@ -861,7 +857,7 @@
                 }
             },
 
-            saveResource: async function() {
+            saveResource: async function(continueAdding = false) {
                 const curUser = window.appState.currentUser;
                 if (!window.appState.fbUser || !curUser) return;
 
@@ -891,7 +887,18 @@
                         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', RESOURCES_COLLECTION), resData);
                         this.showToast("建立成功");
                     }
-                    this.closeModal('resourceModal');
+                    
+                    if (continueAdding) {
+                        // 清空表單，準備下一次新增 (保留原本選擇的類型和分類，只清空內容)
+                        document.getElementById('resId').value = '';
+                        document.getElementById('resTitle').value = '';
+                        document.getElementById('resUrl').value = '';
+                        document.getElementById('resDesc').value = '';
+                        document.getElementById('resTitle').focus(); // 游標自動跳回標題欄
+                    } else {
+                        this.closeModal('resourceModal');
+                    }
+                    
                 } catch(e) { this.showToast("儲存失敗", "error"); }
             },
 
@@ -932,13 +939,21 @@
 
             openModal: function(modalId) {
                 if (modalId === 'resourceModal' && !document.getElementById('resId').value) {
+                    // 初始化新增表單
                     document.getElementById('resId').value = '';
                     document.getElementById('resTitle').value = '';
                     document.getElementById('resUrl').value = '';
                     document.getElementById('resCategory').value = '';
                     document.getElementById('resDesc').value = '';
                     document.getElementById('resourceModalTitle').innerText = '新增分享';
+                    
+                    // 顯示「儲存並繼續」按鈕
+                    document.getElementById('saveAndContinueBtn').classList.remove('hidden');
+                } else if (modalId === 'resourceModal') {
+                     // 編輯模式隱藏「儲存並繼續」按鈕
+                     document.getElementById('saveAndContinueBtn').classList.add('hidden');
                 }
+                
                 document.getElementById(modalId).classList.remove('hidden');
             },
 
