@@ -139,6 +139,7 @@
                         <option value="all">所有類型</option>
                         <option value="document">文件檔案</option>
                         <option value="link">網站連結</option>
+                        <option value="drive">雲端硬碟</option>
                     </select>
                     <select id="categoryFilter" class="cute-input px-4 py-2.5 shadow-sm cursor-pointer min-w-[120px]" onchange="app.handleFilter()">
                         <option value="all">所有分類</option>
@@ -209,14 +210,18 @@
                 
                 <div class="mb-5">
                     <label class="block text-sm font-bold text-[var(--text-main)] mb-2 ml-2">資源類型 <span class="text-[var(--color-red)]">*</span></label>
-                    <div class="flex gap-4">
+                    <div class="flex flex-wrap gap-3">
                         <label class="flex items-center cursor-pointer bg-white px-4 py-2 border-2 border-[#E5D5C5] rounded-full has-[:checked]:border-[var(--color-green)] has-[:checked]:bg-[var(--color-green)] has-[:checked]:bg-opacity-10 transition">
                             <input type="radio" name="resType" value="document" checked class="hidden"> 
-                            <i class="fa-regular fa-file-alt mr-2 text-[var(--text-main)]"></i> <span class="font-bold text-[var(--text-main)]">文件檔案</span>
+                            <i class="fa-regular fa-file-alt mr-2 text-[var(--text-main)]"></i> <span class="font-bold text-[var(--text-main)] text-sm">文件檔案</span>
                         </label>
                         <label class="flex items-center cursor-pointer bg-white px-4 py-2 border-2 border-[#E5D5C5] rounded-full has-[:checked]:border-[var(--color-green)] has-[:checked]:bg-[var(--color-green)] has-[:checked]:bg-opacity-10 transition">
                             <input type="radio" name="resType" value="link" class="hidden"> 
-                            <i class="fa-solid fa-link mr-2 text-[var(--text-main)]"></i> <span class="font-bold text-[var(--text-main)]">網站連結</span>
+                            <i class="fa-solid fa-link mr-2 text-[var(--text-main)]"></i> <span class="font-bold text-[var(--text-main)] text-sm">網站連結</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer bg-white px-4 py-2 border-2 border-[#E5D5C5] rounded-full has-[:checked]:border-[var(--color-green)] has-[:checked]:bg-[var(--color-green)] has-[:checked]:bg-opacity-10 transition">
+                            <input type="radio" name="resType" value="drive" class="hidden"> 
+                            <i class="fa-brands fa-google-drive mr-2 text-[var(--text-main)]"></i> <span class="font-bold text-[var(--text-main)] text-sm">雲端硬碟</span>
                         </label>
                     </div>
                 </div>
@@ -336,7 +341,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-            const firebaseConfig = {
+        const firebaseConfig = {
   apiKey: "AIzaSyDa0NveTZKEo5mODD3XhX_9bA_bPOtcPlQ",
   authDomain: "infor-aded2.firebaseapp.com",
   projectId: "infor-aded2",
@@ -767,9 +772,18 @@
                     `;
                 } else {
                     paginated.forEach(item => {
-                        const isDoc = item.type === 'document';
-                        const iconClass = isDoc ? 'fa-file-alt text-[var(--color-blue)]' : 'fa-link text-[var(--color-green)]';
-                        const typeLabel = isDoc ? '文件' : '網站';
+                        let iconClass = '';
+                        let typeLabel = '';
+                        if (item.type === 'document') {
+                            iconClass = 'fa-file-alt text-[var(--color-blue)]';
+                            typeLabel = '文件';
+                        } else if (item.type === 'drive') {
+                            iconClass = 'fa-google-drive fa-brands text-[var(--color-yellow)]';
+                            typeLabel = '雲端硬碟';
+                        } else {
+                            iconClass = 'fa-link text-[var(--color-green)]';
+                            typeLabel = '網站';
+                        }
                         
                         // 取得分類顏色 (若無對應則用預設灰色)
                         const matchedCat = window.appState.managedCategories.find(c => c.name === item.category);
